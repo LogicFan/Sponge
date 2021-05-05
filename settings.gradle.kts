@@ -5,6 +5,10 @@ pluginManagement {
         maven("https://repo.spongepowered.org/repository/maven-public/") {
             name = "sponge"
         }
+        maven("https://maven.fabricmc.net/") {
+            name = "Fabric"
+        }
+        gradlePluginPortal()
     }
 
     plugins {
@@ -23,15 +27,11 @@ plugins {
 }
 
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
+    // repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
         maven("https://repo.spongepowered.org/repository/maven-public/") {
             name = "sponge"
         }
-        maven("https://maven.fabricmc.net/") {
-            name = "fabric"
-        }
-        gradlePluginPortal()
     }
 }
 
