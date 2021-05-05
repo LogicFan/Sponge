@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "spongefabric",
+  "version": "${version}",
+
+  "name": "Sponge Fabric",
+  "description": "The SpongeAPI implementation for FabricMC.",
+  "authors": [
+    "Yongda Fan",
+    "Tingda Du"
+  ],
+  "contact": {
+    "homepage": "https://github.com/LogicFan/Sponge",
+    "sources": "https://github.com/LogicFan/Sponge"
+  },
+
+  "license": "MIT",
+  "icon": "assets/spongefabric/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "org.spongepowered.fabric.mod.ExampleMod"
+    ]
+  },
+  "mixins": [
+    "modid.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.7.4",
+    "fabric": "*",
+    "minecraft": "1.16.x"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}

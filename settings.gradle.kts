@@ -23,11 +23,15 @@ plugins {
 }
 
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
     repositories {
         maven("https://repo.spongepowered.org/repository/maven-public/") {
             name = "sponge"
         }
+        maven("https://maven.fabricmc.net/") {
+            name = "fabric"
+        }
+        gradlePluginPortal()
     }
 }
 
@@ -47,6 +51,9 @@ includeBuild("SpongeAPI") {
 }
 include(":SpongeVanilla")
 project(":SpongeVanilla").projectDir = file("vanilla")
+
+include(":SpongeFabric")
+project(":SpongeFabric").projectDir = file("fabric")
 
 val testPlugins = file("testplugins.settings.gradle.kts")
 if (testPlugins.exists()) {
