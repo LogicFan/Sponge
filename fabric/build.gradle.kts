@@ -61,13 +61,6 @@ tasks {
 			this.options.release.set(targetVersion)
 		}
 	}
-	withType(Jar::class) {
-		from("LICENSE.txt") {
-			rename {
-				"${it}_${name}"
-			}
-		}
-	}
 }
 
 sourceSets {
@@ -81,6 +74,17 @@ sourceSets {
 	}
 }
 
+license {
+	properties {
+		this["name"] = "Sponge"
+		this["organization"] = organization
+		this["url"] = projectUrl
+	}
+	header(rootProject.file("HEADER.txt"))
+
+	include("**/*.java")
+	newLine(false)
+}
 
 java {
 	sourceCompatibility = JavaVersion.VERSION_1_8
