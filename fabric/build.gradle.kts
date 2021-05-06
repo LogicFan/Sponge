@@ -39,6 +39,7 @@ dependencies {
 	// You may need to force-disable transitiveness on them.
 }
 
+
 tasks {
 	withType(ProcessResources::class) {
 		inputs.properties(Pair("version", project.version))
@@ -61,13 +62,25 @@ tasks {
 		}
 	}
 	withType(Jar::class) {
-		from("LICENSE") {
+		from("LICENSE.txt") {
 			rename {
 				"${it}_${name}"
 			}
 		}
 	}
 }
+
+sourceSets {
+	main {
+		java {
+			setSrcDirs(listOf("src/mod/java"))
+		}
+		resources {
+			setSrcDirs(listOf("src/mod/resources"))
+		}
+	}
+}
+
 
 java {
 	sourceCompatibility = JavaVersion.VERSION_1_8
@@ -98,5 +111,8 @@ publishing {
 		// Notice: This block does NOT have the same function as the block in the top level.
 		// The repositories here will be used for publishing your artifact, not for
 		// retrieving dependencies.
+		mavenCentral()
 	}
 }
+
+
