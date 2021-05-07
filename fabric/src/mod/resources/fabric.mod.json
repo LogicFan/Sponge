@@ -20,16 +20,14 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "org.spongepowered.fabric.mod.ExampleMod"
+      "org.spongepowered.fabric.mod.ModMain"
     ]
   },
   "mixins": [
-    "modid.mixins.json"
   ],
 
   "depends": {
     "fabricloader": ">=0.7.4",
-    "fabric": "*",
     "minecraft": "1.16.x"
   },
   "suggests": {
