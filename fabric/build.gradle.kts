@@ -34,9 +34,19 @@ dependencies {
 	// dependencies from sponge common
 	// api(project(":", configuration = "launch"))
 	implementation(project(commonProject.path))
-	include(project(commonProject.path))
+	// modRuntime(project(commonProject.path))
 }
 
+sourceSets {
+	main {
+		java {
+			setSrcDirs(listOf("src/mod/java"))
+		}
+		resources {
+			setSrcDirs(listOf("src/mod/resources"))
+		}
+	}
+}
 
 tasks {
 	withType(ProcessResources::class) {
@@ -59,16 +69,33 @@ tasks {
 			this.options.release.set(targetVersion)
 		}
 	}
-}
+	shadowJar {
+		archiveClassifier.set("universal")
+//		manifest {
+//			attributes(mapOf(
+//					"Access-Widener" to "common.accesswidener",
+//					"Main-Class" to "org.spongepowered.vanilla.installer.InstallerMain",
+//					"Launch-Target" to "sponge_server_prod",
+//					"Multi-Release" to true,
+//					"Premain-Class" to "org.spongepowered.vanilla.installer.Agent",
+//					"Agent-Class" to "org.spongepowered.vanilla.installer.Agent",
+//					"Launcher-Agent-Class" to "org.spongepowered.vanilla.installer.Agent"
+//			))
+//			from(vanillaManifest)
+//		}
+		from(commonProject.sourceSets.main.map { it.output })
+		from(commonProject.sourceSets.named("mixins").map { it.output })
+		from(commonProject.sourceSets.named("accessors").map { it.output })
+		from(commonProject.sourceSets.named("launch").map { it.output })
+		from(commonProject.sourceSets.named("applaunch").map { it.output })
+		from(sourceSets.main.map { it.output })
 
-sourceSets {
-	main {
-		java {
-			setSrcDirs(listOf("src/mod/java"))
-		}
-		resources {
-			setSrcDirs(listOf("src/mod/resources"))
-		}
+		// We cannot have modules in a shaded jar
+		exclude("META-INF/versions/*/module-info.class")
+		exclude("module-info.class")
+	}
+	assemble {
+		dependsOn(shadowJar)
 	}
 }
 
