@@ -1,5 +1,5 @@
 plugins {
-	id("fabric-loom") version "0.6-SNAPSHOT"
+	id("fabric-loom")
 	id("com.github.johnrengelman.shadow")
 	id("implementation-structure")
 	eclipse
