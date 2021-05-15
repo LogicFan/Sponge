@@ -26,6 +26,9 @@ package org.spongepowered.fabric.mod;
 
 import net.fabricmc.api.ModInitializer;
 
+import net.minecraft.server.Main;
+import org.spongepowered.common.SpongeBootstrap;
+
 public class ModMain implements ModInitializer {
 	@Override
 	public void onInitialize() {
@@ -34,5 +37,7 @@ public class ModMain implements ModInitializer {
 		// Proceed with mild caution.
 
 		System.out.println("Hello Fabric world!");
+
+		SpongeBootstrap.perform("Server", () -> Main.main(new String[]{}));
 	}
 }

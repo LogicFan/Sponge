@@ -26,17 +26,15 @@ repositories {
 }
 
 dependencies {
-	// To change the versions see the gradle.properties file
+	// fabric dependencies
 	minecraft("com.mojang:minecraft:$minecraftVersion")
-	// mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	mappings(minecraft.officialMojangMappings())
 	modImplementation("net.fabricmc:fabric-loader:$loaderVersion")
 
-	// Fabric API. This is technically optional, but you probably want it anyway.
-	// modImplementation("net.fabricmc.fabric-api:fabric-api:$fabric_version")
-
-	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
-	// You may need to force-disable transitiveness on them.
+	// dependencies from sponge common
+	// api(project(":", configuration = "launch"))
+	implementation(project(commonProject.path))
+	include(project(commonProject.path))
 }
 
 
