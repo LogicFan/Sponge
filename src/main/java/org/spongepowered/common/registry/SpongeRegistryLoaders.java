@@ -32,7 +32,6 @@ import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.kyori.adventure.text.Component;
-import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.ComponentArgument;
 import net.minecraft.commands.arguments.CompoundTagArgument;
@@ -72,10 +71,10 @@ import org.spongepowered.api.command.parameter.managed.operator.Operator;
 import org.spongepowered.api.command.parameter.managed.operator.Operators;
 import org.spongepowered.api.command.parameter.managed.standard.ResourceKeyedValueParameters;
 import org.spongepowered.api.command.registrar.CommandRegistrarType;
-import org.spongepowered.api.command.registrar.tree.ClientCompletionKey;
-import org.spongepowered.api.command.registrar.tree.ClientCompletionKeys;
-import org.spongepowered.api.command.registrar.tree.ClientSuggestionProvider;
-import org.spongepowered.api.command.registrar.tree.ClientSuggestionProviders;
+import org.spongepowered.api.command.registrar.tree.CommandCompletionProvider;
+import org.spongepowered.api.command.registrar.tree.CommandCompletionProviders;
+import org.spongepowered.api.command.registrar.tree.CommandTreeNodeType;
+import org.spongepowered.api.command.registrar.tree.CommandTreeNodeTypes;
 import org.spongepowered.api.command.selector.SelectorSortAlgorithm;
 import org.spongepowered.api.command.selector.SelectorSortAlgorithms;
 import org.spongepowered.api.command.selector.SelectorType;
@@ -206,11 +205,11 @@ import org.spongepowered.common.command.registrar.BrigadierCommandRegistrar;
 import org.spongepowered.common.command.registrar.SpongeCommandRegistrarTypes;
 import org.spongepowered.common.command.registrar.SpongeParameterizedCommandRegistrar;
 import org.spongepowered.common.command.registrar.SpongeRawCommandRegistrar;
-import org.spongepowered.common.command.registrar.tree.key.SpongeAmountClientCompletionKey;
-import org.spongepowered.common.command.registrar.tree.key.SpongeBasicClientCompletionKey;
-import org.spongepowered.common.command.registrar.tree.key.SpongeEntityClientCompletionKey;
-import org.spongepowered.common.command.registrar.tree.key.SpongeRangeClientCompletionKey;
-import org.spongepowered.common.command.registrar.tree.key.SpongeStringClientCompletionKey;
+import org.spongepowered.common.command.registrar.tree.key.SpongeAmountCommandTreeNodeType;
+import org.spongepowered.common.command.registrar.tree.key.SpongeBasicCommandTreeNodeType;
+import org.spongepowered.common.command.registrar.tree.key.SpongeEntityCommandTreeNodeType;
+import org.spongepowered.common.command.registrar.tree.key.SpongeRangeCommandTreeNodeType;
+import org.spongepowered.common.command.registrar.tree.key.SpongeStringCommandTreeNodeType;
 import org.spongepowered.common.command.selector.SpongeSelectorSortAlgorithm;
 import org.spongepowered.common.command.selector.SpongeSelectorType;
 import org.spongepowered.common.data.nbt.validation.SpongeValidationType;
@@ -269,6 +268,8 @@ import org.spongepowered.common.map.decoration.SpongeMapDecorationType;
 import org.spongepowered.common.map.decoration.orientation.SpongeMapDecorationOrientation;
 import org.spongepowered.common.placeholder.SpongePlaceholderParserBuilder;
 import org.spongepowered.common.scoreboard.SpongeDisplaySlot;
+import org.spongepowered.common.scoreboard.SpongeDisplaySlotFactory;
+import org.spongepowered.common.util.Constants;
 import org.spongepowered.common.util.VecHelper;
 import org.spongepowered.common.world.portal.EndPortalType;
 import org.spongepowered.common.world.portal.NetherPortalType;
@@ -430,53 +431,53 @@ public final class SpongeRegistryLoaders {
         )));
     }
 
-    public static RegistryLoader<ClientCompletionKey<?>> clientCompletionKey() {
+    public static RegistryLoader<CommandTreeNodeType<?>> clientCompletionKey() {
         final Function<ResourceKey, ArgumentType<?>> fn = key -> ((EmptyArgumentSerializerAccessor<?>) ArgumentTypesAccessor.accessor$BY_NAME().get(key).accessor$serializer()).accessor$constructor().get();
         return RegistryLoader.of(l -> {
-            l.add(ClientCompletionKeys.ANGLE, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.BLOCK_POS, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.BLOCK_PREDICATE, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.BLOCK_STATE, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.BOOL, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.COLOR, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.COLUMN_POS, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.COMPONENT, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.DIMENSION, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.DOUBLE, k -> SpongeRangeClientCompletionKey.createFrom(k, new DoubleArgumentSerializer()));
-            l.add(ClientCompletionKeys.ENTITY, SpongeEntityClientCompletionKey::new);
-            l.add(ClientCompletionKeys.ENTITY_ANCHOR, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.ENTITY_SUMMON, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.FLOAT, k -> SpongeRangeClientCompletionKey.createFrom(k, new FloatArgumentSerializer()));
-            l.add(ClientCompletionKeys.FLOAT_RANGE, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.FUNCTION, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.GAME_PROFILE, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.INTEGER, k -> SpongeRangeClientCompletionKey.createFrom(k, new IntegerArgumentSerializer()));
-            l.add(ClientCompletionKeys.INT_RANGE, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.ITEM_ENCHANTMENT, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.ITEM_PREDICATE, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.ITEM_SLOT, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.ITEM_STACK, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.LONG, k -> SpongeRangeClientCompletionKey.createFrom(k, new LongArgumentSerializer()));
-            l.add(ClientCompletionKeys.MESSAGE, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.MOB_EFFECT, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.NBT_COMPOUND_TAG, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.NBT_PATH, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.NBT_TAG, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.OBJECTIVE, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.OBJECTIVE_CRITERIA, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.OPERATION, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.PARTICLE, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.RESOURCE_LOCATION, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.ROTATION, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.SCORE_HOLDER, k -> new SpongeAmountClientCompletionKey(k, ScoreHolderArgument.scoreHolder(), ScoreHolderArgument.scoreHolders()));
-            l.add(ClientCompletionKeys.SCOREBOARD_SLOT, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.STRING, SpongeStringClientCompletionKey::new);
-            l.add(ClientCompletionKeys.SWIZZLE, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.TEAM, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.TIME, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.UUID, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.VEC2, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
-            l.add(ClientCompletionKeys.VEC3, k -> new SpongeBasicClientCompletionKey(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.ANGLE, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.BLOCK_POS, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.BLOCK_PREDICATE, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.BLOCK_STATE, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.BOOL, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.COLOR, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.COLUMN_POS, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.COMPONENT, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.DIMENSION, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.DOUBLE, k -> SpongeRangeCommandTreeNodeType.createFrom(k, new DoubleArgumentSerializer()));
+            l.add(CommandTreeNodeTypes.ENTITY, SpongeEntityCommandTreeNodeType::new);
+            l.add(CommandTreeNodeTypes.ENTITY_ANCHOR, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.ENTITY_SUMMON, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.FLOAT, k -> SpongeRangeCommandTreeNodeType.createFrom(k, new FloatArgumentSerializer()));
+            l.add(CommandTreeNodeTypes.FLOAT_RANGE, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.FUNCTION, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.GAME_PROFILE, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.INTEGER, k -> SpongeRangeCommandTreeNodeType.createFrom(k, new IntegerArgumentSerializer()));
+            l.add(CommandTreeNodeTypes.INT_RANGE, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.ITEM_ENCHANTMENT, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.ITEM_PREDICATE, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.ITEM_SLOT, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.ITEM_STACK, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.LONG, k -> SpongeRangeCommandTreeNodeType.createFrom(k, new LongArgumentSerializer()));
+            l.add(CommandTreeNodeTypes.MESSAGE, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.MOB_EFFECT, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.NBT_COMPOUND_TAG, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.NBT_PATH, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.NBT_TAG, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.OBJECTIVE, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.OBJECTIVE_CRITERIA, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.OPERATION, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.PARTICLE, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.RESOURCE_LOCATION, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.ROTATION, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.SCORE_HOLDER, k -> new SpongeAmountCommandTreeNodeType(k, ScoreHolderArgument.scoreHolder(), ScoreHolderArgument.scoreHolders()));
+            l.add(CommandTreeNodeTypes.SCOREBOARD_SLOT, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.STRING, SpongeStringCommandTreeNodeType::new);
+            l.add(CommandTreeNodeTypes.SWIZZLE, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.TEAM, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.TIME, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.UUID, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.VEC2, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
+            l.add(CommandTreeNodeTypes.VEC3, k -> new SpongeBasicCommandTreeNodeType(k, fn.apply(k)));
         });
     }
 
@@ -491,12 +492,12 @@ public final class SpongeRegistryLoaders {
         });
     }
 
-    public static RegistryLoader<ClientSuggestionProvider> clientSuggestionProvider() {
+    public static RegistryLoader<CommandCompletionProvider> clientSuggestionProvider() {
         return RegistryLoader.of(l -> {
-            l.add(ClientSuggestionProviders.ALL_RECIPES, k -> (ClientSuggestionProvider) SuggestionProviders.ALL_RECIPES);
-            l.add(ClientSuggestionProviders.AVAILABLE_BIOMES, k -> (ClientSuggestionProvider) SuggestionProviders.AVAILABLE_BIOMES);
-            l.add(ClientSuggestionProviders.AVAILABLE_SOUNDS, k -> (ClientSuggestionProvider) SuggestionProviders.AVAILABLE_SOUNDS);
-            l.add(ClientSuggestionProviders.SUMMONABLE_ENTITIES, k -> (ClientSuggestionProvider) SuggestionProviders.SUMMONABLE_ENTITIES);
+            l.add(CommandCompletionProviders.ALL_RECIPES, k -> (CommandCompletionProvider) SuggestionProviders.ALL_RECIPES);
+            l.add(CommandCompletionProviders.AVAILABLE_BIOMES, k -> (CommandCompletionProvider) SuggestionProviders.AVAILABLE_BIOMES);
+            l.add(CommandCompletionProviders.AVAILABLE_SOUNDS, k -> (CommandCompletionProvider) SuggestionProviders.AVAILABLE_SOUNDS);
+            l.add(CommandCompletionProviders.SUMMONABLE_ENTITIES, k -> (CommandCompletionProvider) SuggestionProviders.SUMMONABLE_ENTITIES);
         });
     }
 
@@ -559,25 +560,12 @@ public final class SpongeRegistryLoaders {
 
     public static RegistryLoader<DisplaySlot> displaySlot() {
         return RegistryLoader.of(l -> {
-            l.add(2, DisplaySlots.BELOW_NAME, SpongeDisplaySlot::new);
-            l.add(0, DisplaySlots.LIST, SpongeDisplaySlot::new);
-            l.add(1, DisplaySlots.SIDEBAR_TEAM_NO_COLOR, SpongeDisplaySlot::new);
-            l.add(ChatFormatting.AQUA.getId() + 3, DisplaySlots.SIDEBAR_TEAM_AQUA, SpongeDisplaySlot::new);
-            l.add(ChatFormatting.BLACK.getId() + 3, DisplaySlots.SIDEBAR_TEAM_BLACK, SpongeDisplaySlot::new);
-            l.add(ChatFormatting.BLUE.getId() + 3, DisplaySlots.SIDEBAR_TEAM_BLUE, SpongeDisplaySlot::new);
-            l.add(ChatFormatting.DARK_AQUA.getId() + 3, DisplaySlots.SIDEBAR_TEAM_DARK_AQUA, SpongeDisplaySlot::new);
-            l.add(ChatFormatting.DARK_BLUE.getId() + 3, DisplaySlots.SIDEBAR_TEAM_DARK_BLUE, SpongeDisplaySlot::new);
-            l.add(ChatFormatting.DARK_GRAY.getId() + 3, DisplaySlots.SIDEBAR_TEAM_DARK_GRAY, SpongeDisplaySlot::new);
-            l.add(ChatFormatting.DARK_GREEN.getId() + 3, DisplaySlots.SIDEBAR_TEAM_DARK_GREEN, SpongeDisplaySlot::new);
-            l.add(ChatFormatting.DARK_PURPLE.getId() + 3, DisplaySlots.SIDEBAR_TEAM_DARK_PURPLE, SpongeDisplaySlot::new);
-            l.add(ChatFormatting.DARK_RED.getId() + 3, DisplaySlots.SIDEBAR_TEAM_DARK_RED, SpongeDisplaySlot::new);
-            l.add(ChatFormatting.GOLD.getId() + 3, DisplaySlots.SIDEBAR_TEAM_GOLD, SpongeDisplaySlot::new);
-            l.add(ChatFormatting.GRAY.getId() + 3, DisplaySlots.SIDEBAR_TEAM_GRAY, SpongeDisplaySlot::new);
-            l.add(ChatFormatting.GREEN.getId() + 3, DisplaySlots.SIDEBAR_TEAM_GREEN, SpongeDisplaySlot::new);
-            l.add(ChatFormatting.LIGHT_PURPLE.getId() + 3, DisplaySlots.SIDEBAR_TEAM_LIGHT_PURPLE, SpongeDisplaySlot::new);
-            l.add(ChatFormatting.RED.getId() + 3, DisplaySlots.SIDEBAR_TEAM_RED, SpongeDisplaySlot::new);
-            l.add(ChatFormatting.WHITE.getId() + 3, DisplaySlots.SIDEBAR_TEAM_WHITE, SpongeDisplaySlot::new);
-            l.add(ChatFormatting.YELLOW.getId() + 3, DisplaySlots.SIDEBAR_TEAM_YELLOW, SpongeDisplaySlot::new);
+            l.add(0, DisplaySlots.LIST, k -> new SpongeDisplaySlot(0));
+            l.add(1, DisplaySlots.SIDEBAR, k -> new SpongeDisplaySlot(1));
+            l.add(2, DisplaySlots.BELOW_NAME, k -> new SpongeDisplaySlot(2));
+
+            SpongeDisplaySlotFactory.ColorMapping.COLOR_TO_DISPLAY_SLOT_MAP.forEach((color, s) ->
+                            l.add(SpongeDisplaySlot.slotIdFromFormatting(color), s, k -> new SpongeDisplaySlot(color)));
         });
     }
 

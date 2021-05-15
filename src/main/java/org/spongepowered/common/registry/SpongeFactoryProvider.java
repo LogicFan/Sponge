@@ -34,6 +34,7 @@ import org.spongepowered.api.advancement.criteria.OrCriterion;
 import org.spongepowered.api.adventure.Audiences;
 import org.spongepowered.api.adventure.SpongeComponents;
 import org.spongepowered.api.command.CommandCause;
+import org.spongepowered.api.command.CommandCompletion;
 import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.command.parameter.managed.standard.VariableValueParameters;
 import org.spongepowered.api.command.registrar.tree.CommandTreeNode;
@@ -55,6 +56,7 @@ import org.spongepowered.api.registry.RegistryReference;
 import org.spongepowered.api.registry.RegistryType;
 import org.spongepowered.api.registry.TypeNotFoundException;
 import org.spongepowered.api.resourcepack.ResourcePack;
+import org.spongepowered.api.scoreboard.displayslot.DisplaySlot;
 import org.spongepowered.api.state.StateMatcher;
 import org.spongepowered.api.util.AABB;
 import org.spongepowered.api.util.MinecraftDayTime;
@@ -90,6 +92,7 @@ import org.spongepowered.common.advancement.criterion.SpongeAndCriterion;
 import org.spongepowered.common.advancement.criterion.SpongeOrCriterion;
 import org.spongepowered.common.adventure.AudiencesFactory;
 import org.spongepowered.common.adventure.SpongeAdventure;
+import org.spongepowered.common.command.SpongeCommandCompletionFactory;
 import org.spongepowered.common.command.manager.SpongeCommandCauseFactory;
 import org.spongepowered.common.command.parameter.SpongeParameterFactory;
 import org.spongepowered.common.command.parameter.managed.factory.SpongeVariableValueParametersFactory;
@@ -106,8 +109,9 @@ import org.spongepowered.common.network.channel.SpongeChannelExceptionHandlerFac
 import org.spongepowered.common.network.status.SpongeFavicon;
 import org.spongepowered.common.profile.SpongeGameProfile;
 import org.spongepowered.common.profile.SpongeProfilePropertyFactory;
-import org.spongepowered.common.relocate.co.aikar.timings.SpongeTimingsFactory;
+import co.aikar.timings.sponge.SpongeTimingsFactory;
 import org.spongepowered.common.resourcepack.SpongeResourcePack;
+import org.spongepowered.common.scoreboard.SpongeDisplaySlotFactory;
 import org.spongepowered.common.state.SpongeStateMatcherFactory;
 import org.spongepowered.common.util.SpongeAABB;
 import org.spongepowered.common.util.SpongeDamageSourceFactory;
@@ -232,6 +236,8 @@ public final class SpongeFactoryProvider implements FactoryProvider {
                 .registerFactory(ChunkGenerator.Factory.class, new SpongeChunkGeneratorFactory())
                 .registerFactory(ItemStackComparators.Factory.class, new SpongeItemStackComparatorFactory())
                 .registerFactory(Favicon.Factory.class, new SpongeFavicon.FactoryImpl())
+                .registerFactory(CommandCompletion.Factory.class, new SpongeCommandCompletionFactory())
+                .registerFactory(DisplaySlot.Factory.class, new SpongeDisplaySlotFactory())
         ;
     }
 }

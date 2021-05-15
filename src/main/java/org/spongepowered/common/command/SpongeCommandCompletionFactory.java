@@ -22,35 +22,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.relocate.co.aikar.timings;
+package org.spongepowered.common.command;
 
-import co.aikar.timings.Timing;
+import net.kyori.adventure.text.Component;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.spongepowered.api.command.CommandCompletion;
 
-public final class NullTimingHandler implements Timing {
-
-    @Override
-    public Timing startTiming() {
-        return this;
-    }
+public final class SpongeCommandCompletionFactory implements CommandCompletion.Factory {
 
     @Override
-    public void stopTiming() {
+    @NonNull
+    public CommandCompletion completion(final @NonNull String completion, final @Nullable Component tooltip) {
+        if (completion == null || completion.isEmpty()) {
+            throw new IllegalStateException("The completion may not be null or empty.");
+        }
+        return new SpongeCommandCompletion(completion, tooltip);
     }
-
-    @Override
-    public void startTimingIfSync() {
-    }
-
-    @Override
-    public void stopTimingIfSync() {
-    }
-
-    @Override
-    public void abort() {
-    }
-
-    @Override
-    public void close() {
-    }
-
 }

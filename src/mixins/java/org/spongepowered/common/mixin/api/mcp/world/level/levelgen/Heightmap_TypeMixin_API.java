@@ -22,28 +22,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.command.registrar.tree.key;
+package org.spongepowered.common.mixin.api.mcp.world.level.levelgen;
 
-import com.mojang.brigadier.arguments.ArgumentType;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.spongepowered.api.ResourceKey;
-import org.spongepowered.api.command.registrar.tree.ClientCompletionKey;
-import org.spongepowered.api.command.registrar.tree.CommandTreeNode;
-import org.spongepowered.common.AbstractResourceKeyed;
-import org.spongepowered.common.command.registrar.tree.builder.BasicCommandTreeNode;
+import org.spongepowered.api.block.BlockState;
+import org.spongepowered.api.util.BlockReaderAwareMatcher;
+import org.spongepowered.api.world.HeightType;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 
-public final class SpongeBasicClientCompletionKey extends AbstractResourceKeyed implements ClientCompletionKey<CommandTreeNode.@NonNull Basic> {
+import java.util.function.Predicate;
+import net.minecraft.world.level.levelgen.Heightmap;
 
-    private final ArgumentType<?> argumentType;
+@Mixin(value = Heightmap.Types.class)
+public abstract class Heightmap_TypeMixin_API implements HeightType {
 
-    public SpongeBasicClientCompletionKey(final ResourceKey key, final ArgumentType<?> argumentType) {
-        super(key);
-
-        this.argumentType = argumentType;
-    }
+    // @formatter:off
+    @Shadow @Final private Predicate<net.minecraft.world.level.block.state.BlockState> isOpaque;
+    // @formatter:on
 
     @Override
-    public CommandTreeNode.@NonNull Basic createNode() {
-        return new BasicCommandTreeNode(this, this.argumentType);
+    @NonNull
+    public BlockReaderAwareMatcher<BlockState> matcher() {
+        return (state, volume, position) -> this.isOpaque.test((net.minecraft.world.level.block.state.BlockState) state);
     }
+
 }

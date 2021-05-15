@@ -22,30 +22,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.command.registrar.tree.key;
+package co.aikar.timings.sponge;
 
-import com.mojang.brigadier.arguments.ArgumentType;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.spongepowered.api.ResourceKey;
-import org.spongepowered.api.command.registrar.tree.ClientCompletionKey;
-import org.spongepowered.api.command.registrar.tree.CommandTreeNode;
-import org.spongepowered.common.AbstractResourceKeyed;
-import org.spongepowered.common.command.registrar.tree.builder.AmountCommandTreeNode;
+import co.aikar.timings.Timing;
 
-public final class SpongeAmountClientCompletionKey extends AbstractResourceKeyed implements ClientCompletionKey<CommandTreeNode.@NonNull Amount> {
+public final class NullTimingHandler implements Timing {
 
-    private final ArgumentType<?> ifSingle;
-    private final ArgumentType<?> ifMultiple;
-
-    public SpongeAmountClientCompletionKey(final ResourceKey key, final ArgumentType<?> ifSingle, final ArgumentType<?> ifMultiple) {
-        super(key);
-
-        this.ifSingle = ifSingle;
-        this.ifMultiple = ifMultiple;
+    @Override
+    public Timing startTiming() {
+        return this;
     }
 
     @Override
-    public CommandTreeNode.@NonNull Amount createNode() {
-        return new AmountCommandTreeNode(this, this.ifSingle, this.ifMultiple);
+    public void stopTiming() {
     }
+
+    @Override
+    public void startTimingIfSync() {
+    }
+
+    @Override
+    public void stopTimingIfSync() {
+    }
+
+    @Override
+    public void abort() {
+    }
+
+    @Override
+    public void close() {
+    }
+
 }

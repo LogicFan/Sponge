@@ -26,20 +26,16 @@ package org.spongepowered.common.command.parameter.managed.standard;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.brigadier.arguments.ArgumentType;
-import net.kyori.adventure.text.Component;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.command.CommandCause;
+import org.spongepowered.api.command.CommandCompletion;
 import org.spongepowered.api.command.exception.ArgumentParseException;
 import org.spongepowered.api.command.parameter.ArgumentReader;
-import org.spongepowered.api.command.parameter.CommandContext;
-import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.data.persistence.DataContainer;
-import org.spongepowered.api.data.persistence.DataFormats;
 import org.spongepowered.common.command.brigadier.argument.ResourceKeyedArgumentValueParser;
 import org.spongepowered.common.util.Constants;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -51,7 +47,7 @@ public final class SpongeDataContainerValueParameter extends ResourceKeyedArgume
     }
 
     @Override
-    public @NonNull List<String> complete(final @NonNull CommandCause context, final @NonNull String currentInput) {
+    public List<CommandCompletion> complete(final @NonNull CommandCause context, final @NonNull String currentInput) {
         return ImmutableList.of();
     }
 
