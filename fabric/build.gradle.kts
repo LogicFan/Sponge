@@ -69,8 +69,8 @@ tasks {
 			this.options.release.set(targetVersion)
 		}
 	}
-	shadowJar {
-		archiveClassifier.set("universal")
+	val shadowJar by getting(com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar::class) {
+		archiveClassifier.set("universal-dev")
 //		manifest {
 //			attributes(mapOf(
 //					"Access-Widener" to "common.accesswidener",
@@ -96,6 +96,11 @@ tasks {
 	}
 	assemble {
 		dependsOn(shadowJar)
+	}
+	remapJar {
+		dependsOn(shadowJar)
+		archiveClassifier.set("universal")
+		input.fileValue(shadowJar.outputs.files.singleFile)
 	}
 }
 
