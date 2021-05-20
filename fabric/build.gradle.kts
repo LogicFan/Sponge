@@ -17,6 +17,9 @@ val name : String by project
 val loaderVersion : String by project
 val modVersion : String by project
 
+val fabricInstaller by sourceSets.register("installer")
+
+
 repositories {
 	// Add repositories to retrieve artifacts from in here.
 	// You should only use this when depending on other mods because
@@ -69,20 +72,20 @@ tasks {
 			this.options.release.set(targetVersion)
 		}
 	}
+	val downloadNotNeeded = configurations.register("downloadNotNeeded") {
+		extendsFrom(configurations.minecraft.get())
+	}
+	val emitDependencies by registering(org.spongepowered.gradle.impl.OutputDependenciesToJson::class) {
+		group = "sponge"
+		// except what we're providing through the installer
+		this.excludedDependencies(downloadNotNeeded)
+	}
+	named(fabricInstaller.processResourcesTaskName).configure {
+		dependsOn(emitDependencies)
+	}
 	shadowJar {
 		archiveClassifier.set("universal")
-//		manifest {
-//			attributes(mapOf(
-//					"Access-Widener" to "common.accesswidener",
-//					"Main-Class" to "org.spongepowered.vanilla.installer.InstallerMain",
-//					"Launch-Target" to "sponge_server_prod",
-//					"Multi-Release" to true,
-//					"Premain-Class" to "org.spongepowered.vanilla.installer.Agent",
-//					"Agent-Class" to "org.spongepowered.vanilla.installer.Agent",
-//					"Launcher-Agent-Class" to "org.spongepowered.vanilla.installer.Agent"
-//			))
-//			from(vanillaManifest)
-//		}
+		configurations = listOf(project.configurations.getByName(fabricInstaller.runtimeClasspathConfigurationName))
 		from(commonProject.sourceSets.main.map { it.output })
 		from(commonProject.sourceSets.named("mixins").map { it.output })
 		from(commonProject.sourceSets.named("accessors").map { it.output })
@@ -93,6 +96,7 @@ tasks {
 		// We cannot have modules in a shaded jar
 		exclude("META-INF/versions/*/module-info.class")
 		exclude("module-info.class")
+		duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 	}
 	assemble {
 		dependsOn(shadowJar)
