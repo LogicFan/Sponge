@@ -19,25 +19,14 @@ val modVersion : String by project
 
 val fabricInstaller by sourceSets.register("installer")
 
-
-repositories {
-	// Add repositories to retrieve artifacts from in here.
-	// You should only use this when depending on other mods because
-	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
-	// for more information about repositories.
-}
-
 dependencies {
 	// fabric dependencies
 	minecraft("com.mojang:minecraft:$minecraftVersion")
 	mappings(minecraft.officialMojangMappings())
 	modImplementation("net.fabricmc:fabric-loader:$loaderVersion")
 
-	// dependencies from sponge common
-	// api(project(":", configuration = "launch"))
+	// sponge dependencies
 	implementation(project(commonProject.path))
-	// modRuntime(project(commonProject.path))
 }
 
 sourceSets {
@@ -123,9 +112,6 @@ license {
 java {
 	sourceCompatibility = JavaVersion.VERSION_1_8
 	targetCompatibility = JavaVersion.VERSION_1_8
-	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-	// if it is present.
-	// If you remove this line, sources will not be generated.
 	withSourcesJar()
 }
 
