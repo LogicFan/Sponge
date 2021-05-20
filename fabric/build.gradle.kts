@@ -83,7 +83,7 @@ tasks {
 	named(fabricInstaller.processResourcesTaskName).configure {
 		dependsOn(emitDependencies)
 	}
-	shadowJar {
+	val shadowJar by getting(com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar::class) {
 		archiveClassifier.set("universal")
 		configurations = listOf(project.configurations.getByName(fabricInstaller.runtimeClasspathConfigurationName))
 		from(commonProject.sourceSets.main.map { it.output })
@@ -100,6 +100,11 @@ tasks {
 	}
 	assemble {
 		dependsOn(shadowJar)
+	}
+	remapJar {
+		dependsOn(shadowJar)
+		archiveClassifier.set("universal")
+		input.fileValue(shadowJar.outputs.files.singleFile)
 	}
 }
 
