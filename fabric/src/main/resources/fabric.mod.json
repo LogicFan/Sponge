@@ -20,7 +20,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "org.spongepowered.fabric.mod.ModMain"
+      "org.spongepowered.fabric.ModMain"
     ]
   },
   "mixins": [

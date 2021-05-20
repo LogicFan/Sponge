@@ -29,16 +29,16 @@ dependencies {
 	implementation(project(commonProject.path))
 }
 
-sourceSets {
-	main {
-		java {
-			setSrcDirs(listOf("src/mod/java"))
-		}
-		resources {
-			setSrcDirs(listOf("src/mod/resources"))
-		}
-	}
-}
+//sourceSets {
+//	main {
+//		java {
+//			setSrcDirs(listOf("src/mod/java"))
+//		}
+//		resources {
+//			setSrcDirs(listOf("src/mod/resources"))
+//		}
+//	}
+//}
 
 tasks {
 	withType(ProcessResources::class) {
