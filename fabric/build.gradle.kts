@@ -84,7 +84,7 @@ tasks {
 		dependsOn(emitDependencies)
 	}
 	val shadowJar by getting(com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar::class) {
-		archiveClassifier.set("universal")
+		archiveClassifier.set("universal-dev")
 		configurations = listOf(project.configurations.getByName(fabricInstaller.runtimeClasspathConfigurationName))
 		from(commonProject.sourceSets.main.map { it.output })
 		from(commonProject.sourceSets.named("mixins").map { it.output })
