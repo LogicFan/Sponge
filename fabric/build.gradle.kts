@@ -17,7 +17,34 @@ val name : String by project
 val loaderVersion : String by project
 val modVersion : String by project
 
+// Fabric extra configurations
+val fabricLibrariesConfig: NamedDomainObjectProvider<Configuration> = configurations.register("libraries")
+val fabricAppLaunchConfig: NamedDomainObjectProvider<Configuration> = configurations.register("applaunch") {
+	extendsFrom(fabricLibrariesConfig.get())
+	// extendsFrom(configurations.minecraft.get())
+}
+val fabricInstallerConfig: Provider<Configuration> = configurations.register("installer")
+
+// Fabric source sets
 val fabricInstaller by sourceSets.register("installer")
+val fabricInstallerJava9 by sourceSets.register("installerJava9") {
+	this.java.setSrcDirs(setOf("src/installer/java9"))
+	compileClasspath += fabricInstaller.compileClasspath
+	compileClasspath += fabricInstaller.runtimeClasspath
+
+	tasks.named(compileJavaTaskName, JavaCompile::class) {
+		options.release.set(9)
+		if (JavaVersion.current() < JavaVersion.VERSION_11) {
+			javaCompiler.set(javaToolchains.compilerFor { languageVersion.set(JavaLanguageVersion.of(11)) })
+		}
+	}
+
+	dependencies.add(implementationConfigurationName, objects.fileCollection().from(fabricInstaller.output.classesDirs))
+}
+
+configurations.named(fabricInstaller.implementationConfigurationName) {
+	extendsFrom(fabricInstallerConfig.get())
+}
 
 dependencies {
 	// fabric dependencies
@@ -27,18 +54,15 @@ dependencies {
 
 	// sponge dependencies
 	implementation(project(commonProject.path))
-}
 
-//sourceSets {
-//	main {
-//		java {
-//			setSrcDirs(listOf("src/mod/java"))
-//		}
-//		resources {
-//			setSrcDirs(listOf("src/mod/resources"))
-//		}
-//	}
-//}
+	val installer = fabricInstallerConfig.get().name
+	installer("com.google.code.gson:gson:2.8.0")
+	installer("org.spongepowered:configurate-hocon:4.1.1")
+	installer("org.spongepowered:configurate-core:4.1.1")
+	installer("net.sf.jopt-simple:jopt-simple:5.0.3")
+	installer("org.tinylog:tinylog-api:2.2.1")
+	installer("org.tinylog:tinylog-impl:2.2.1")
+}
 
 tasks {
 	withType(ProcessResources::class) {
@@ -48,30 +72,24 @@ tasks {
 		}
 	}
 	withType(JavaCompile::class).configureEach {
-		// ensure that the encoding is set to UTF-8, no matter what the system default is
-		// this fixes some edge cases with special characters not displaying correctly
-		// see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
-		// If Javadoc is generated, this must be specified in that task too.
 		this.options.encoding = "UTF-8"
-		// The Minecraft launcher currently installs Java 8 for users, so your mod probably wants to target Java 8 too
-		// JDK 9 introduced a new way of specifying this that will make sure no newer classes or methods are used.
-		// We'll use that if it's available, but otherwise we'll use the older option.
-		val targetVersion = 8
-		if (JavaVersion.current().isJava9Compatible) {
-			this.options.release.set(targetVersion)
-		}
 	}
-	val downloadNotNeeded = configurations.register("downloadNotNeeded") {
-		extendsFrom(configurations.minecraft.get())
-	}
+
+	val installerResources = project.layout.buildDirectory.dir("generated/resources/installer")
+//	val downloadNotNeeded = configurations.register("downloadNotNeeded") {
+//		extendsFrom(configurations.minecraft.get())
+//	}
 	val emitDependencies by registering(org.spongepowered.gradle.impl.OutputDependenciesToJson::class) {
 		group = "sponge"
+		this.dependencies(fabricAppLaunchConfig)
 		// except what we're providing through the installer
-		this.excludedDependencies(downloadNotNeeded)
+		// this.excludedDependencies(downloadNotNeeded)
+		outputFile.set(installerResources.map { it.file("libraries.json") })
 	}
 	named(fabricInstaller.processResourcesTaskName).configure {
 		dependsOn(emitDependencies)
 	}
+
 	shadowJar {
 		archiveClassifier.set("universal-dev")
 		configurations = listOf(project.configurations.getByName(fabricInstaller.runtimeClasspathConfigurationName))
@@ -81,6 +99,10 @@ tasks {
 		from(commonProject.sourceSets.named("launch").map { it.output })
 		from(commonProject.sourceSets.named("applaunch").map { it.output })
 		from(sourceSets.main.map { it.output })
+		from(fabricInstaller.output)
+		from(fabricInstallerJava9.output) {
+			into("META-INF/versions/9/")
+		}
 
 		// We cannot have modules in a shaded jar
 		exclude("META-INF/versions/*/module-info.class")
