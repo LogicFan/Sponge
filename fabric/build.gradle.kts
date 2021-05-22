@@ -64,6 +64,17 @@ dependencies {
 	installer("org.tinylog:tinylog-impl:2.2.1")
 }
 
+val fabricManifest = the<JavaPluginConvention>().manifest {
+	attributes(
+			"Specification-Title" to "SpongeFabric",
+			"Specification-Vendor" to "SpongePowered",
+			"Specification-Version" to apiVersion,
+			"Implementation-Title" to project.name,
+			"Implementation-Version" to spongeImpl.generatePlatformBuildVersionString(apiVersion, minecraftVersion, recommendedVersion),
+			"Implementation-Vendor" to "SpongePowered"
+	)
+}
+
 tasks {
 	withType(ProcessResources::class) {
 		inputs.properties(Pair("version", project.version))
@@ -74,6 +85,27 @@ tasks {
 	withType(JavaCompile::class).configureEach {
 		this.options.encoding = "UTF-8"
 	}
+
+	jar {
+		manifest.from(fabricManifest)
+	}
+	val fabricInstallerJar by registering(Jar::class) {
+		archiveClassifier.set("installer")
+		manifest{
+			from(fabricManifest)
+			attributes(
+					"Premain-Class" to "org.spongepowered.fabric.installer.Agent",
+					"Agent-Class" to "org.spongepowered.fabric.installer.Agent",
+					"Launcher-Agent-Class" to "org.spongepowered.fabric.installer.Agent",
+					"Multi-Release" to true
+			)
+		}
+		from(fabricInstaller.output)
+		into("META-INF/versions/9/") {
+			from(fabricInstallerJava9.output)
+		}
+	}
+
 
 	val installerResources = project.layout.buildDirectory.dir("generated/resources/installer")
 //	val downloadNotNeeded = configurations.register("downloadNotNeeded") {
@@ -92,7 +124,22 @@ tasks {
 
 	shadowJar {
 		archiveClassifier.set("universal-dev")
+
 		configurations = listOf(project.configurations.getByName(fabricInstaller.runtimeClasspathConfigurationName))
+
+		manifest {
+			attributes(mapOf(
+					// "Access-Widener" to "common.accesswidener",
+					// "Main-Class" to "org.spongepowered.vanilla.installer.InstallerMain",
+					"Launch-Target" to "sponge_server_prod",
+					"Multi-Release" to true,
+					"Premain-Class" to "org.spongepowered.vanilla.installer.Agent",
+					"Agent-Class" to "org.spongepowered.vanilla.installer.Agent",
+					"Launcher-Agent-Class" to "org.spongepowered.vanilla.installer.Agent"
+			))
+			from(fabricManifest)
+		}
+
 		from(commonProject.sourceSets.main.map { it.output })
 		from(commonProject.sourceSets.named("mixins").map { it.output })
 		from(commonProject.sourceSets.named("accessors").map { it.output })
