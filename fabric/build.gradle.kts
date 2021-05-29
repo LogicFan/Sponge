@@ -21,7 +21,6 @@ val modVersion : String by project
 val fabricLibrariesConfig: NamedDomainObjectProvider<Configuration> = configurations.register("libraries")
 val fabricAppLaunchConfig: NamedDomainObjectProvider<Configuration> = configurations.register("applaunch") {
 	extendsFrom(fabricLibrariesConfig.get())
-	// extendsFrom(configurations.minecraft.get())
 }
 val fabricInstallerConfig: Provider<Configuration> = configurations.register("installer")
 
@@ -42,6 +41,9 @@ val fabricInstallerJava9 by sourceSets.register("installerJava9") {
 	dependencies.add(implementationConfigurationName, objects.fileCollection().from(fabricInstaller.output.classesDirs))
 }
 
+// Configuration from VanillaGradle
+// val spongeMinecraftConfig: Configuration? = commonProject.configurations["minecraft"];
+
 configurations.named(fabricInstaller.implementationConfigurationName) {
 	extendsFrom(fabricInstallerConfig.get())
 }
@@ -55,13 +57,78 @@ dependencies {
 	// sponge dependencies
 	implementation(project(commonProject.path))
 
+	val apiAdventureVersion: String by project
+	val apiConfigurateVersion: String by project
+	val asmVersion: String by project
+	val guavaVersion: String by project
+	val jlineVersion: String by project
+	val log4jVersion: String by project
+	val mixinVersion: String by project
+	val modlauncherVersion: String by project
+	val pluginSpiVersion: String by project
+	val timingsVersion: String by project
+
 	val installer = fabricInstallerConfig.get().name
+	installer("net.fabricmc:fabric-loader:$loaderVersion")
 	installer("com.google.code.gson:gson:2.8.0")
 	installer("org.spongepowered:configurate-hocon:4.1.1")
 	installer("org.spongepowered:configurate-core:4.1.1")
 	installer("net.sf.jopt-simple:jopt-simple:5.0.3")
 	installer("org.tinylog:tinylog-api:2.2.1")
 	installer("org.tinylog:tinylog-impl:2.2.1")
+	// Override ASM versions, and explicitly declare dependencies so ASM is excluded from the manifest.
+	val asmExclusions = sequenceOf("-commons", "-tree", "-analysis", "")
+			.map { "asm$it" }
+			.onEach {
+				installer("org.ow2.asm:$it:$asmVersion")
+			}.toSet()
+	installer("org.cadixdev:atlas:0.2.1") {
+		asmExclusions.forEach { exclude(group = "org.ow2.asm", module = it) } // Use our own ASM version
+	}
+	installer("org.cadixdev:lorenz-asm:0.5.6") {
+		asmExclusions.forEach { exclude(group = "org.ow2.asm", module = it) } // Use our own ASM version
+	}
+	installer("org.cadixdev:lorenz-io-proguard:0.5.6")
+
+	// Add the API as a runtime dependency, just so it gets shaded into the jar
+	add(fabricInstaller.runtimeOnlyConfigurationName, "org.spongepowered:spongeapi:$apiVersion") {
+		isTransitive = false
+	}
+
+	val appLaunch = fabricAppLaunchConfig.name
+	appLaunch("org.spongepowered:spongeapi:$apiVersion")
+	appLaunch(platform("net.kyori:adventure-bom:$apiAdventureVersion"))
+	appLaunch("net.kyori:adventure-serializer-configurate4")
+	appLaunch("org.spongepowered:mixin:$mixinVersion")
+	appLaunch("org.ow2.asm:asm-util:$asmVersion")
+	appLaunch("org.ow2.asm:asm-tree:$asmVersion")
+	appLaunch("com.google.guava:guava:$guavaVersion")
+	appLaunch("org.spongepowered:plugin-spi:$pluginSpiVersion")
+	appLaunch("javax.inject:javax.inject:1")
+	appLaunch("org.apache.logging.log4j:log4j-api:$log4jVersion")
+	appLaunch("org.apache.logging.log4j:log4j-core:$log4jVersion")
+	appLaunch("com.lmax:disruptor:3.4.2")
+	appLaunch("com.zaxxer:HikariCP:2.6.3")
+	appLaunch("org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion")
+	appLaunch(platform("org.spongepowered:configurate-bom:$apiConfigurateVersion"))
+	appLaunch("org.spongepowered:configurate-core") {
+		exclude(group = "org.checkerframework", module = "checker-qual")
+	}
+	appLaunch("org.spongepowered:configurate-hocon") {
+		exclude(group = "org.spongepowered", module = "configurate-core")
+		exclude(group = "org.checkerframework", module = "checker-qual")
+	}
+	appLaunch("org.spongepowered:configurate-jackson") {
+		exclude(group = "org.spongepowered", module = "configurate-core")
+		exclude(group = "org.checkerframework", module = "checker-qual")
+	}
+
+	val libraries = fabricLibrariesConfig.name
+	libraries("net.minecrell:terminalconsoleappender:1.3.0-SNAPSHOT")
+	libraries("org.jline:jline-terminal:$jlineVersion")
+	libraries("org.jline:jline-reader:$jlineVersion")
+	libraries("org.jline:jline-terminal-jansi:$jlineVersion")
+	libraries("org.spongepowered:timings:$timingsVersion")
 }
 
 val fabricManifest = the<JavaPluginConvention>().manifest {
@@ -108,14 +175,9 @@ tasks {
 
 
 	val installerResources = project.layout.buildDirectory.dir("generated/resources/installer")
-//	val downloadNotNeeded = configurations.register("downloadNotNeeded") {
-//		extendsFrom(configurations.minecraft.get())
-//	}
 	val emitDependencies by registering(org.spongepowered.gradle.impl.OutputDependenciesToJson::class) {
 		group = "sponge"
 		this.dependencies(fabricAppLaunchConfig)
-		// except what we're providing through the installer
-		// this.excludedDependencies(downloadNotNeeded)
 		outputFile.set(installerResources.map { it.file("libraries.json") })
 	}
 	named(fabricInstaller.processResourcesTaskName).configure {
