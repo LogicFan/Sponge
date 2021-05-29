@@ -22,35 +22,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.launch;
+package org.spongepowered.vanilla.generator;
 
-import com.google.common.collect.Lists;
-import org.spongepowered.asm.mixin.Mixins;
-import org.spongepowered.asm.mixin.connect.IMixinConnector;
+import com.github.javaparser.utils.Log;
+import org.tinylog.Logger;
 
-import java.util.List;
+import java.util.function.Supplier;
 
-public abstract class LaunchMixinConnector implements IMixinConnector {
+public class JavaparserLog implements Log.Adapter {
 
     @Override
-    public final void connect() {
-        for (final String config : this.getMixinConfigs()) {
-            Mixins.addConfiguration(config);
+    public void info(final Supplier<String> message) {
+        if (Logger.isInfoEnabled()) {
+            Logger.info(message.get());
         }
     }
 
-    public List<String> getMixinConfigs() {
-        return Lists.newArrayList(
-            "mixins.sponge.accessors.json",
-            "mixins.sponge.api.json",
-            "mixins.sponge.concurrent.json",
-            "mixins.sponge.core.json",
-            "mixins.sponge.entityactivation.json",
-            "mixins.sponge.exploit.json",
-            "mixins.sponge.inventory.json",
-            "mixins.sponge.movementcheck.json",
-            "mixins.sponge.tracker.json",
-            "mixins.sponge.ipforward.json"
-        );
+    @Override
+    public void trace(final Supplier<String> message) {
+        if (Logger.isTraceEnabled()) {
+            Logger.trace(message.get());
+        }
+    }
+
+    @Override
+    public void error(final Supplier<Throwable> throwableSupplier, final Supplier<String> messageSupplier) {
+        if (Logger.isErrorEnabled()) {
+            Logger.error(throwableSupplier.get(), messageSupplier.get());
+        }
     }
 }

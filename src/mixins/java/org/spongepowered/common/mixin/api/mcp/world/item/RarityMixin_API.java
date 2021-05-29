@@ -22,19 +22,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.vanilla.applaunch.mixin;
+package org.spongepowered.common.mixin.api.mcp.world.item;
 
-import org.spongepowered.common.launch.LaunchMixinConnector;
+import net.kyori.adventure.text.format.TextColor;
+import net.minecraft.ChatFormatting;
+import org.spongepowered.api.item.ItemRarity;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.common.adventure.SpongeAdventure;
 
-import java.util.List;
+@Mixin(net.minecraft.world.item.Rarity.class)
+public abstract class RarityMixin_API implements ItemRarity {
 
-public final class VanillaLaunchMixinConnector extends LaunchMixinConnector {
+    private TextColor api$color;
+
+    @Inject(method = "<init>", at = @At(value = "RETURN"))
+    private void api$setColor(final String enumName, final int ordinal, final ChatFormatting param0, final CallbackInfo ci) {
+        this.api$color = SpongeAdventure.asAdventure(param0);
+    }
 
     @Override
-    public List<String> getMixinConfigs() {
-        final List<String> mixinConfigs = super.getMixinConfigs();
-        mixinConfigs.add("mixins.spongevanilla.api.json");
-        mixinConfigs.add("mixins.spongevanilla.core.json");
-        return mixinConfigs;
+    public TextColor color() {
+        return this.api$color;
     }
+
 }

@@ -22,32 +22,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.vanilla.applaunch.mixin;
+package org.spongepowered.vanilla.generator;
 
-import org.spongepowered.asm.launch.platform.container.ContainerHandleModLauncher;
-import org.spongepowered.asm.service.modlauncher.MixinServiceModLauncher;
-import org.spongepowered.asm.util.Constants;
+import java.io.IOException;
 
-public final class MixinServiceVanillaModLauncher extends MixinServiceModLauncher {
+interface Generator {
 
-    private final ContainerHandleModLauncher rootContainer = new ContainerHandleVanillaModLauncher(this.getName());
+    /**
+     * A user-visible name for the generator.
+     *
+     * @return the name
+     */
+    String name();
 
-    @Override
-    public boolean isValid() {
-        return true;
-    }
+    /**
+     * Generate data given the provided context.
+     *
+     * @param ctx context
+     */
+    void generate(final Context ctx) throws IOException;
 
-    @Override
-    public ContainerHandleModLauncher getPrimaryContainer() {
-        return this.rootContainer;
-    }
-
-    private static final class ContainerHandleVanillaModLauncher extends ContainerHandleModLauncher {
-
-        public ContainerHandleVanillaModLauncher(final String name) {
-            super(name);
-
-            this.setAttribute(Constants.ManifestAttributes.MIXINCONNECTOR, "org.spongepowered.vanilla.applaunch.mixin.VanillaLaunchMixinConnector");
-        }
-    }
 }
