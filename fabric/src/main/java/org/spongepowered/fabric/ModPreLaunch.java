@@ -22,13 +22,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.fabric.installer;
+package org.spongepowered.fabric;
 
 import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
 
-public class PreLaunch implements PreLaunchEntrypoint {
+public class ModPreLaunch implements PreLaunchEntrypoint {
     @Override
     public void onPreLaunch() {
-
+        System.out.println("pre-launch, should invoke installer here");
     }
 }

@@ -21,6 +21,9 @@
   "entrypoints": {
     "main": [
       "org.spongepowered.fabric.ModMain"
+    ],
+    "preLaunch": [
+      "org.spongepowered.fabric.ModPreLaunch"
     ]
   },
   "mixins": [

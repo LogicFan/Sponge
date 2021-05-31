@@ -1,21 +1,30 @@
+import org.jetbrains.gradle.ext.TaskTriggersConfig;
+
 plugins {
 	id("fabric-loom")
 	id("com.github.johnrengelman.shadow")
 	id("implementation-structure")
+	id("templated-resources")
 	eclipse
 }
 
+// variable for Sponge
 val commonProject = parent!!
-
 val apiVersion: String by project
 val minecraftVersion: String by project
 val recommendedVersion: String by project
 val organization: String by project
 val projectUrl: String by project
 
+val testplugins: Project? = rootProject.subprojects.find { "testplugins".equals(it.name) }
+
+// variable for Fabric
 val name : String by project
 val loaderVersion : String by project
 val modVersion : String by project
+
+description = "The SpongeAPI implementation for FabricMC"
+version = spongeImpl.generatePlatformBuildVersionString(apiVersion, minecraftVersion, recommendedVersion)
 
 // Fabric extra configurations
 val fabricLibrariesConfig: NamedDomainObjectProvider<Configuration> = configurations.register("libraries")
@@ -23,6 +32,14 @@ val fabricAppLaunchConfig: NamedDomainObjectProvider<Configuration> = configurat
 	extendsFrom(fabricLibrariesConfig.get())
 }
 val fabricInstallerConfig: Provider<Configuration> = configurations.register("installer")
+
+// Common source sets and configurations
+val launchConfig = commonProject.configurations.named("launch")
+val accessors = commonProject.sourceSets.named("accessors")
+val launch = commonProject.sourceSets.named("launch")
+val applaunch = commonProject.sourceSets.named("applaunch")
+val mixins = commonProject.sourceSets.named("mixins")
+val main = commonProject.sourceSets.named("main")
 
 // Fabric source sets
 val fabricInstaller by sourceSets.register("installer")
@@ -40,9 +57,6 @@ val fabricInstallerJava9 by sourceSets.register("installerJava9") {
 
 	dependencies.add(implementationConfigurationName, objects.fileCollection().from(fabricInstaller.output.classesDirs))
 }
-
-// Configuration from VanillaGradle
-// val spongeMinecraftConfig: Configuration? = commonProject.configurations["minecraft"];
 
 configurations.named(fabricInstaller.implementationConfigurationName) {
 	extendsFrom(fabricInstallerConfig.get())
@@ -69,7 +83,8 @@ dependencies {
 	val timingsVersion: String by project
 
 	val installer = fabricInstallerConfig.get().name
-	installer("net.fabricmc:fabric-loader:$loaderVersion")
+	// This cannot be added, otherwise it will mess up the shadowJar
+	// installer("net.fabricmc:fabric-loader:$loaderVersion")
 	installer("com.google.code.gson:gson:2.8.0")
 	installer("org.spongepowered:configurate-hocon:4.1.1")
 	installer("org.spongepowered:configurate-core:4.1.1")
@@ -156,6 +171,7 @@ tasks {
 	jar {
 		manifest.from(fabricManifest)
 	}
+
 	val fabricInstallerJar by registering(Jar::class) {
 		archiveClassifier.set("installer")
 		manifest{
@@ -173,11 +189,43 @@ tasks {
 		}
 	}
 
+	// copy and convert installer/templates/** into src
+	val installerTemplateSource = project.file("src/installer/templates")
+	val installerTemplateDest = project.layout.buildDirectory.dir("generated/sources/installerTemplates")
+	val generateInstallerTemplates by registering(Copy::class) {
+		group = "sponge"
+		description = "Generate classes from templates for the SpongeFabric installer"
+		val properties = mutableMapOf(
+				"minecraftVersion" to minecraftVersion
+		)
+		inputs.properties(properties)
+
+		// Copy template
+		from(installerTemplateSource)
+		into(installerTemplateDest)
+		expand(properties)
+	}
+	fabricInstaller.java.srcDir(generateInstallerTemplates.map { it.outputs })
+
+	// Generate templates on IDE import as well
+	(rootProject.idea.project as? ExtensionAware)?.also {
+		(it.extensions["settings"] as ExtensionAware).extensions.getByType(TaskTriggersConfig::class).afterSync(generateInstallerTemplates)
+	}
+	project.eclipse {
+		synchronizationTasks(generateInstallerTemplates)
+	}
 
 	val installerResources = project.layout.buildDirectory.dir("generated/resources/installer")
+	fabricInstaller.resources.srcDir(installerResources)
+
+	val downloadNotNeeded = configurations.register("downloadNotNeeded") {
+		extendsFrom(fabricInstallerConfig.get())
+	}
+
 	val emitDependencies by registering(org.spongepowered.gradle.impl.OutputDependenciesToJson::class) {
 		group = "sponge"
 		this.dependencies(fabricAppLaunchConfig)
+		this.excludedDependencies(downloadNotNeeded)
 		outputFile.set(installerResources.map { it.file("libraries.json") })
 	}
 	named(fabricInstaller.processResourcesTaskName).configure {
@@ -192,12 +240,12 @@ tasks {
 		manifest {
 			attributes(mapOf(
 					// "Access-Widener" to "common.accesswidener",
-					// "Main-Class" to "org.spongepowered.vanilla.installer.InstallerMain",
+					// "Main-Class" to "org.spongepowered.fabric.installer.InstallerMain",
 					"Launch-Target" to "sponge_server_prod",
 					"Multi-Release" to true,
-					"Premain-Class" to "org.spongepowered.vanilla.installer.Agent",
-					"Agent-Class" to "org.spongepowered.vanilla.installer.Agent",
-					"Launcher-Agent-Class" to "org.spongepowered.vanilla.installer.Agent"
+					"Premain-Class" to "org.spongepowered.fabric.installer.Agent",
+					"Agent-Class" to "org.spongepowered.fabric.installer.Agent",
+					"Launcher-Agent-Class" to "org.spongepowered.fabric.installer.Agent"
 			))
 			from(fabricManifest)
 		}
@@ -216,7 +264,7 @@ tasks {
 		// We cannot have modules in a shaded jar
 		exclude("META-INF/versions/*/module-info.class")
 		exclude("module-info.class")
-		duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+		// duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 	}
 	assemble {
 		dependsOn(shadowJar)
