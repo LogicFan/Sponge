@@ -25,10 +25,31 @@
 package org.spongepowered.fabric;
 
 import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.lang.reflect.InvocationTargetException;
 
 public class ModPreLaunch implements PreLaunchEntrypoint {
+    private static final Logger LOGGER = LogManager.getLogger(ModPreLaunch.class);
+
     @Override
     public void onPreLaunch() {
-        System.out.println("pre-launch, should invoke installer here");
+        LOGGER.info("Invoking SpongeFabric installer...");
+        invokeMain("org.spongepowered.fabric.installer.InstallerMain", new String[]{});
+    }
+
+    private static void invokeMain(final String className, final String[] args) {
+        try {
+            Class.forName(className)
+                    .getMethod("main", String[].class)
+                    .invoke(null, (Object) args);
+        } catch (final InvocationTargetException ex) {
+            LOGGER.error("Failed to invoke main class {} due to an error", className, ex.getCause());
+            System.exit(1);
+        } catch (final ClassNotFoundException | NoSuchMethodException | IllegalAccessException ex) {
+            LOGGER.error("Failed to invoke main class {} due to an error", className, ex);
+            System.exit(1);
+        }
     }
 }
