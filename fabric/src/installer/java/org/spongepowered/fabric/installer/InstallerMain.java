@@ -47,6 +47,7 @@ public final class InstallerMain {
 
     public void run() {
         try  {
+            AgentLoader.load();
             this.downloadAndRun();
         } catch (final Exception ex) {
             Logger.error(ex, "Failed to download Sponge libraries and/or Minecraft");
