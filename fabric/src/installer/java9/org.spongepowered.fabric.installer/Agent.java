@@ -63,7 +63,7 @@ public class Agent {
 
     static void addJarToClasspath(final Path jar) {
         if (Agent.instrumentation == null) {
-            throw new IllegalStateException("The SpongeVanilla jar must be run as a java agent in order to add downloaded libraries to the classpath!");
+            throw new IllegalStateException("Java Agent is not initialized!");
         }
         try {
             final Path normalized = Paths.get(jar.toRealPath().toUri().toURL().toURI());
