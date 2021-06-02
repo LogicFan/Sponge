@@ -44,16 +44,21 @@ import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
+import net.minecraft.world.entity.animal.Fox;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.apache.logging.log4j.Level;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.data.Transaction;
 import org.spongepowered.api.data.type.HandType;
+import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
+import org.spongepowered.api.event.Cause;
 import org.spongepowered.api.event.CauseStackManager;
 import org.spongepowered.api.event.EventContextKeys;
 import org.spongepowered.api.event.SpongeEventFactory;
+import org.spongepowered.api.event.action.SleepingEvent;
 import org.spongepowered.api.event.cause.entity.MovementTypes;
 import org.spongepowered.api.event.cause.entity.damage.DamageFunction;
 import org.spongepowered.api.event.cause.entity.damage.source.FallingBlockDamageSource;
@@ -61,6 +66,8 @@ import org.spongepowered.api.event.entity.DamageEntityEvent;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.event.item.inventory.UseItemStackEvent;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
+import org.spongepowered.api.world.server.ServerLocation;
+import org.spongepowered.api.world.server.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -71,11 +78,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import org.spongepowered.common.SpongeCommon;
+import org.spongepowered.common.bridge.world.WorldBridge;
 import org.spongepowered.common.bridge.world.entity.EntityTypeBridge;
 import org.spongepowered.common.bridge.world.entity.LivingEntityBridge;
 import org.spongepowered.common.bridge.world.entity.PlatformLivingEntityBridge;
 import org.spongepowered.common.bridge.world.entity.player.PlayerBridge;
-import org.spongepowered.common.bridge.world.WorldBridge;
 import org.spongepowered.common.entity.living.human.HumanEntity;
 import org.spongepowered.common.event.ShouldFire;
 import org.spongepowered.common.event.SpongeCommonEventFactory;
@@ -85,6 +92,7 @@ import org.spongepowered.common.event.tracking.PhaseTracker;
 import org.spongepowered.common.item.util.ItemStackUtil;
 import org.spongepowered.common.util.Constants;
 import org.spongepowered.common.util.PrettyPrinter;
+import org.spongepowered.common.util.VecHelper;
 import org.spongepowered.math.vector.Vector3d;
 
 import java.util.ArrayList;
@@ -160,6 +168,7 @@ public abstract class LivingEntityMixin extends EntityMixin implements LivingEnt
     @Shadow  public abstract Collection<MobEffectInstance> shadow$getActiveEffects();
     @Shadow public abstract float shadow$getMaxHealth();
     @Shadow public abstract AttributeMap shadow$getAttributes();
+    @Shadow public abstract void shadow$clearSleepingPos();
     // @formatter:on
 
     @Nullable private ItemStack impl$activeItemStackCopy;
@@ -913,4 +922,25 @@ public abstract class LivingEntityMixin extends EntityMixin implements LivingEnt
     }
 
     // End implementation of UseItemStackEvent
+
+    @Inject(method = "stopSleeping", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;clearSleepingPos()V"))
+    private void impl$callFinishSleepingEvent(CallbackInfo ci) {
+        final Optional<BlockPos> sleepingPos = this.shadow$getSleepingPos();
+        if (!sleepingPos.isPresent()) {
+            return;
+        }
+        BlockSnapshot snapshot = ((ServerWorld) this.level).createSnapshot(sleepingPos.get().getX(), sleepingPos.get().getY(), sleepingPos.get().getZ());
+        final Cause currentCause = Sponge.server().causeStackManager().currentCause();
+        ServerLocation loc = ServerLocation.of((ServerWorld) this.level, VecHelper.toVector3d(this.shadow$position()));
+        Vector3d rot = ((Living) this).rotation();
+        final SleepingEvent.Finish event = SpongeEventFactory.createSleepingEventFinish(currentCause, loc, loc, rot, rot, snapshot, (Living) this);
+        Sponge.eventManager().post(event);
+        this.shadow$clearSleepingPos();
+        if (event.toLocation().world() != this.level) {
+            throw new UnsupportedOperationException("World change is not supported here.");
+        }
+        this.shadow$setPos(event.toLocation().x(), event.toLocation().y(), event.toLocation().z());
+        ((Living) this).setRotation(event.toRotation());
+
+    }
 }

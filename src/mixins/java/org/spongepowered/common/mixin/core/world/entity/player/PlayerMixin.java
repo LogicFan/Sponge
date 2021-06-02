@@ -25,6 +25,7 @@
 package org.spongepowered.common.mixin.core.world.entity.player;
 
 import com.mojang.authlib.GameProfile;
+import com.mojang.datafixers.util.Either;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -39,6 +40,7 @@ import net.minecraft.stats.Stat;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.TagContainer;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Unit;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -51,6 +53,7 @@ import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Abilities;
+import net.minecraft.world.entity.player.Player.BedSleepingProblem;
 import net.minecraft.world.food.FoodData;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -62,6 +65,7 @@ import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.scores.Scoreboard;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.entity.living.Humanoid;
+import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Cause;
 import org.spongepowered.api.event.CauseStackManager;
@@ -145,6 +149,9 @@ public abstract class PlayerMixin extends LivingEntityMixin implements PlayerBri
     @Shadow public abstract Component shadow$getDisplayName();
     @Shadow protected abstract void shadow$removeEntitiesOnShoulder();
     @Shadow public abstract void shadow$awardStat(ResourceLocation stat);
+    @Shadow public Either<BedSleepingProblem, Unit> shadow$startSleepInBed(BlockPos param0) {
+        return null; // Shadowed
+    }
     // @formatter: on
 
     private boolean impl$affectsSpawning = true;
@@ -205,7 +212,7 @@ public abstract class PlayerMixin extends LivingEntityMixin implements PlayerBri
                 csm.pushCause(this);
                 final BlockPos bedLocation = this.shadow$getSleepingPos().get();
                 final BlockSnapshot snapshot = ((ServerWorld) this.level).createSnapshot(bedLocation.getX(), bedLocation.getY(), bedLocation.getZ());
-                SpongeCommon.postEvent(SpongeEventFactory.createSleepingEventTick(csm.currentCause(), snapshot, (Humanoid) this));
+                SpongeCommon.postEvent(SpongeEventFactory.createSleepingEventTick(csm.currentCause(), snapshot, (Living) this));
                 csm.popCause();
             }
             return true;

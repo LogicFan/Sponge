@@ -113,13 +113,13 @@ public abstract class AbstractFurnaceBlockEntityMixin extends BaseContainerBlock
         final Cause cause = PhaseTracker.getCauseStackManager().currentCause();
         if (this.cookingProgress == 0) { // Start
             final CookingEvent.Start event = SpongeEventFactory.createCookingEventStart(cause, (FurnaceBlockEntity) this, Optional.of(fuel),
-                    Optional.of((CookingRecipe) recipe), Collections.emptyList());
+                    Optional.of((CookingRecipe) recipe));
             SpongeCommon.postEvent(event);
             return !event.isCancelled();
-
         } else { // Tick up
-            final CookingEvent.Tick event = SpongeEventFactory.createCookingEventTick(cause, (FurnaceBlockEntity) this, Optional.of(fuel),
-                    Optional.of((CookingRecipe) recipe), Collections.emptyList());
+            final ItemStackSnapshot stack = ItemStackUtil.snapshotOf(this.items.get(0));
+            final CookingEvent.Tick event = SpongeEventFactory.createCookingEventTick(cause, (FurnaceBlockEntity) this, stack, Optional.of(fuel),
+                    Optional.of((CookingRecipe) recipe));
             SpongeCommon.postEvent(event);
             return !event.isCancelled();
         }
@@ -132,8 +132,9 @@ public abstract class AbstractFurnaceBlockEntityMixin extends BaseContainerBlock
         final ItemStackSnapshot fuel = ItemStackUtil.snapshotOf(this.items.get(1));
         final Cause cause = PhaseTracker.getCauseStackManager().currentCause();
         final AbstractCookingRecipe recipe = this.impl$getCurrentRecipe();
-        final CookingEvent.Tick event = SpongeEventFactory.createCookingEventTick(cause, (FurnaceBlockEntity) this, Optional.of(fuel),
-                Optional.of((CookingRecipe) recipe), Collections.emptyList());
+        final ItemStackSnapshot stack = ItemStackUtil.snapshotOf(this.items.get(0));
+        final CookingEvent.Tick event = SpongeEventFactory.createCookingEventTick(cause, (FurnaceBlockEntity) this, stack, Optional.of(fuel),
+                Optional.of((CookingRecipe) recipe));
         SpongeCommon.postEvent(event);
         if (event.isCancelled()) {
             return this.cookingProgress; // dont tick down
