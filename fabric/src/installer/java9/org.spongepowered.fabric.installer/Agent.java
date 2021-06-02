@@ -25,6 +25,7 @@
 package org.spongepowered.fabric.installer;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.units.qual.A;
 import org.tinylog.Logger;
 
 import java.io.File;
@@ -37,6 +38,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarFile;
@@ -58,12 +60,22 @@ public class Agent {
     }
 
     public static void agentmain(final String agentArgs, final Instrumentation instrumentation) {
-        Agent.instrumentation = instrumentation;
+        Arrays.stream(instrumentation.getAllLoadedClasses())
+                .filter(cls -> cls.getName().equals(Agent.class.getName()))
+                .forEach(cls -> {
+                    try {
+                        Field field = cls.getDeclaredField("instrumentation");
+                        field.setAccessible(true);
+                        field.set(null, instrumentation);
+                    } catch (NoSuchFieldException | IllegalAccessException e) {
+                        Logger.error(e, "class {} with id {} is not an agent class", cls.getName(), cls.hashCode());
+                    }
+                });
     }
 
     static void addJarToClasspath(final Path jar) {
         if (Agent.instrumentation == null) {
-            throw new IllegalStateException("Java Agent is not initialized!");
+            throw new RuntimeException("Agent initialization fail.");
         }
         try {
             final Path normalized = Paths.get(jar.toRealPath().toUri().toURL().toURI());

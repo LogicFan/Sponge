@@ -28,11 +28,13 @@ import org.tinylog.Logger;
 
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.jar.JarFile;
 
 /**
@@ -63,7 +65,17 @@ public class Agent {
     }
 
     public static void agentmain(final String agentArgs, final Instrumentation instrumentation) {
-        Agent.instrumentation = instrumentation;
+        Arrays.stream(instrumentation.getAllLoadedClasses())
+                .filter(cls -> cls.getName().equals(Agent.class.getName()))
+                .forEach(cls -> {
+                    try {
+                        Field field = cls.getDeclaredField("instrumentation");
+                        field.setAccessible(true);
+                        field.set(null, instrumentation);
+                    } catch (NoSuchFieldException | IllegalAccessException e) {
+                        Logger.error(e, "class {} with id {} is not an agent class", cls.getName(), cls.hashCode());
+                    }
+                });
     }
 
     static void addJarToClasspath(final Path jar) {

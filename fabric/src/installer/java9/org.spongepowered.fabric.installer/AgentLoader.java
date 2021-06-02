@@ -24,10 +24,34 @@
  */
 package org.spongepowered.fabric.installer;
 
+import com.sun.tools.attach.VirtualMachine;
+import org.tinylog.Logger;
+
+import java.io.File;
+import java.lang.instrument.Instrumentation;
+import java.net.URISyntaxException;
+
 public class AgentLoader {
-    /**
-     * This is only useful for Java 9+, for Java 8, Agent can be non-initialized.
-     */
     public static void load() {
+        try {
+            File agent = new File(Agent.class.getProtectionDomain().getCodeSource().getLocation()
+                    .toURI());
+            Logger.info("Locate Java Agent at {}", agent.toPath());
+
+            long pid = ProcessHandle.current().pid();
+            Logger.info("Current process ID is {}", pid);
+
+            VirtualMachine vm = VirtualMachine.attach(String.valueOf(pid));
+            vm.loadAgent(agent.getAbsolutePath());
+            vm.detach();
+
+            Logger.info("Java Agent is successfully loaded.");
+        } catch (URISyntaxException e) {
+            throw new RuntimeException("Cannot locate Agent class file location", e);
+        } catch (SecurityException e) {
+            throw new RuntimeException("Do not have sufficient permission to load Java Agent.", e);
+        } catch (Exception e) {
+            throw new RuntimeException("Load Java Agent fail.", e);
+        }
     }
 }
