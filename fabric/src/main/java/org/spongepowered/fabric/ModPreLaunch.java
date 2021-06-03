@@ -35,8 +35,10 @@ public class ModPreLaunch implements PreLaunchEntrypoint {
 
     @Override
     public void onPreLaunch() {
-        LOGGER.info("Invoking SpongeFabric installer...");
-        invokeMain("org.spongepowered.fabric.installer.InstallerMain", new String[]{});
+        String[] args = System.getProperty("sun.java.command").split(" ");
+        LOGGER.info("Invoking SpongeFabric installer with args {}", (Object) args);
+
+        invokeMain("org.spongepowered.fabric.installer.InstallerMain", args);
     }
 
     private static void invokeMain(final String className, final String[] args) {
