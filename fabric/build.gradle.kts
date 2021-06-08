@@ -253,9 +253,9 @@ tasks {
 		exclude("module-info.class")
 		// duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 	}
-	assemble {
-		dependsOn(shadowJar)
-	}
+//	assemble {
+//		dependsOn(shadowJar)
+//	}
 	remapJar {
 		dependsOn(shadowJar)
 		archiveClassifier.set("universal")
@@ -281,27 +281,45 @@ java {
 	withSourcesJar()
 }
 
+val shadowJar by tasks.existing
+val remapJar by tasks.existing
+val fabricInstallerJar by tasks.existing
+//val vanillaAppLaunchJar by tasks.existing
+//val vanillaLaunchJar by tasks.existing
+//val vanillaMixinsJar by tasks.existing
+
 // configure the maven publication
 publishing {
 	publications {
-		create<MavenPublication>("mavenJava") {
-			// add all the jars that should be included when publishing to maven
-			artifact(tasks["remapJar"]) {
-				builtBy(tasks["remapJar"])
-			}
-			artifact(tasks["sourcesJar"]) {
-				builtBy(tasks["remapSourcesJar"])
+		register("sponge", MavenPublication::class) {
+			artifact(shadowJar.get());
+			artifact(remapJar.get())
+			artifact(fabricInstallerJar.get())
+//			artifact(vanillaAppLaunchJar.get())
+//			artifact(vanillaLaunchJar.get())
+//			artifact(vanillaMixinsJar.get())
+//			artifact(tasks["applaunchSourceJar"])
+//			artifact(tasks["launchSourceJar"])
+//			artifact(tasks["mixinsSourceJar"])
+			pom {
+				artifactId = project.name.toLowerCase()
+				this.name.set(project.name)
+				this.description.set(project.description)
+				this.url.set(projectUrl)
+
+				licenses {
+					license {
+						this.name.set("MIT")
+						this.url.set("https://opensource.org/licenses/MIT")
+					}
+				}
+				scm {
+					connection.set("scm:git:git://github.com/SpongePowered/Sponge.git")
+					developerConnection.set("scm:git:ssh://github.com/SpongePowered/Sponge.git")
+					this.url.set(projectUrl)
+				}
 			}
 		}
-	}
-
-	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-	repositories {
-		// Add repositories to publish to here.
-		// Notice: This block does NOT have the same function as the block in the top level.
-		// The repositories here will be used for publishing your artifact, not for
-		// retrieving dependencies.
-		mavenCentral()
 	}
 }
 
