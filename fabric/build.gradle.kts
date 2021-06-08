@@ -252,11 +252,8 @@ tasks {
 		// We cannot have modules in a shaded jar
 		exclude("META-INF/versions/*/module-info.class")
 		exclude("module-info.class")
-		// duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 	}
-//	assemble {
-//		dependsOn(shadowJar)
-//	}
+
 	remapJar {
 		dependsOn(shadowJar)
 		archiveClassifier.set("universal")
@@ -274,12 +271,6 @@ license {
 
 	include("**/*.java")
 	newLine(false)
-}
-
-java {
-	sourceCompatibility = JavaVersion.VERSION_1_8
-	targetCompatibility = JavaVersion.VERSION_1_8
-	withSourcesJar()
 }
 
 val shadowJar by tasks.existing
