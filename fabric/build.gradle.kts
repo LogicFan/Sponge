@@ -1,4 +1,5 @@
-import org.jetbrains.gradle.ext.TaskTriggersConfig;
+import org.jetbrains.gradle.ext.TaskTriggersConfig
+import org.spongepowered.gradle.impl.OutputDependenciesToJson
 
 plugins {
 	id("fabric-loom")
@@ -83,27 +84,13 @@ dependencies {
 	val timingsVersion: String by project
 
 	val installer = fabricInstallerConfig.get().name
-	// This cannot be added, otherwise it will mess up the shadowJar
-	// installer("net.fabricmc:fabric-loader:$loaderVersion")
 	installer("com.google.code.gson:gson:2.8.0")
 	installer("org.spongepowered:configurate-hocon:4.1.1")
 	installer("org.spongepowered:configurate-core:4.1.1")
 	installer("net.sf.jopt-simple:jopt-simple:5.0.3")
 	installer("org.tinylog:tinylog-api:2.2.1")
 	installer("org.tinylog:tinylog-impl:2.2.1")
-	// Override ASM versions, and explicitly declare dependencies so ASM is excluded from the manifest.
-	val asmExclusions = sequenceOf("-commons", "-tree", "-analysis", "")
-			.map { "asm$it" }
-			.onEach {
-				installer("org.ow2.asm:$it:$asmVersion")
-			}.toSet()
-	installer("org.cadixdev:atlas:0.2.1") {
-		asmExclusions.forEach { exclude(group = "org.ow2.asm", module = it) } // Use our own ASM version
-	}
-	installer("org.cadixdev:lorenz-asm:0.5.6") {
-		asmExclusions.forEach { exclude(group = "org.ow2.asm", module = it) } // Use our own ASM version
-	}
-	installer("org.cadixdev:lorenz-io-proguard:0.5.6")
+	installer("org.ow2.asm:asm-commons:$asmVersion")
 
 	// Add the API as a runtime dependency, just so it gets shaded into the jar
 	add(fabricInstaller.runtimeOnlyConfigurationName, "org.spongepowered:spongeapi:$apiVersion") {
@@ -222,7 +209,7 @@ tasks {
 		extendsFrom(fabricInstallerConfig.get())
 	}
 
-	val emitDependencies by registering(org.spongepowered.gradle.impl.OutputDependenciesToJson::class) {
+	val emitDependencies by registering(OutputDependenciesToJson::class) {
 		group = "sponge"
 		this.dependencies(fabricAppLaunchConfig)
 		this.excludedDependencies(downloadNotNeeded)
