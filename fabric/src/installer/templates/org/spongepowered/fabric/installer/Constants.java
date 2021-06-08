@@ -24,7 +24,11 @@
  */
 package org.spongepowered.fabric.installer;
 
+import org.objectweb.asm.Opcodes;
+
 public final class Constants {
+
+    public static final int ASM_VERSION = Opcodes.ASM9;
 
     public static final class Libraries {
 
