@@ -31,6 +31,8 @@ version = spongeImpl.generatePlatformBuildVersionString(apiVersion, minecraftVer
 val fabricLibrariesConfig: NamedDomainObjectProvider<Configuration> = configurations.register("libraries")
 val fabricAppLaunchConfig: NamedDomainObjectProvider<Configuration> = configurations.register("applaunch") {
 	extendsFrom(fabricLibrariesConfig.get())
+	// TODO: is it correct?
+	extendsFrom(configurations.modImplementationMapped.get())
 }
 val fabricInstallerConfig: Provider<Configuration> = configurations.register("installer")
 
@@ -208,6 +210,8 @@ tasks {
 
 	val downloadNotNeeded = configurations.register("downloadNotNeeded") {
 		extendsFrom(fabricInstallerConfig.get())
+		// TODO: is it correct?
+		extendsFrom(configurations.modImplementationMapped.get())
 	}
 
 	val emitDependencies by registering(OutputDependenciesToJson::class) {
