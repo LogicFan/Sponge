@@ -156,11 +156,12 @@ tasks {
 	}
 
 	jar {
+		archiveClassifier.set("dev")
 		manifest.from(fabricManifest)
 	}
 
 	val fabricInstallerJar by registering(Jar::class) {
-		archiveClassifier.set("installer")
+		archiveClassifier.set("installer-dev")
 		manifest{
 			from(fabricManifest)
 			attributes(
