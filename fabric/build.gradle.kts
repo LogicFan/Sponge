@@ -92,18 +92,18 @@ dependencies {
 	installer("org.tinylog:tinylog-api:2.2.1")
 	installer("org.tinylog:tinylog-impl:2.2.1")
 	// Override ASM versions, and explicitly declare dependencies so ASM is excluded from the manifest.
-//	val asmExclusions = sequenceOf("-commons", "-tree", "-analysis", "")
-//			.map { "asm$it" }
-//			.onEach {
-//				installer("org.ow2.asm:$it:$asmVersion")
-//			}.toSet()
-//	installer("org.cadixdev:atlas:0.2.1") {
-//		asmExclusions.forEach { exclude(group = "org.ow2.asm", module = it) } // Use our own ASM version
-//	}
-//	installer("org.cadixdev:lorenz-asm:0.5.6") {
-//		asmExclusions.forEach { exclude(group = "org.ow2.asm", module = it) } // Use our own ASM version
-//	}
-//	 installer("org.cadixdev:lorenz-io-proguard:0.5.6")
+	val asmExclusions = sequenceOf("-commons", "-tree", "-analysis", "")
+			.map { "asm$it" }
+			.onEach {
+				installer("org.ow2.asm:$it:$asmVersion")
+			}.toSet()
+	installer("org.cadixdev:atlas:0.2.1") {
+		asmExclusions.forEach { exclude(group = "org.ow2.asm", module = it) } // Use our own ASM version
+	}
+	installer("org.cadixdev:lorenz-asm:0.5.6") {
+		asmExclusions.forEach { exclude(group = "org.ow2.asm", module = it) } // Use our own ASM version
+	}
+	installer("org.cadixdev:lorenz-io-proguard:0.5.6")
 
 	// Add the API as a runtime dependency, just so it gets shaded into the jar
 	add(fabricInstaller.runtimeOnlyConfigurationName, "org.spongepowered:spongeapi:$apiVersion") {
