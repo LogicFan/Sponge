@@ -22,26 +22,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.data.provider.block.state;
+package org.spongepowered.common.mixin.core.world.level.saveddata;
 
-import net.minecraft.world.level.block.ConduitBlock;
-import net.minecraft.world.level.block.state.BlockState;
-import org.spongepowered.api.data.Keys;
-import org.spongepowered.common.data.provider.DataProviderRegistrator;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import net.minecraft.world.level.saveddata.maps.MapIndex;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.common.bridge.map.MapIdTrackerBridge;
+import org.spongepowered.common.util.Constants;
 
-public final class ConduitData {
+import java.util.Optional;
+import java.util.OptionalInt;
 
-    private ConduitData() {
+@Mixin(MapIndex.class)
+public abstract class MapIdTrackerMixin implements MapIdTrackerBridge {
+
+    @Shadow @Final private Object2IntMap<String> usedAuxIds;
+
+    @Override
+    public void bridge$setHighestMapId(final int id) {
+        this.usedAuxIds.put(Constants.Map.ID_COUNTS_KEY, id);
     }
 
-    // @formatter:off
-    public static void register(final DataProviderRegistrator registrator) {
-        registrator
-                .asImmutable(BlockState.class)
-                    .create(Keys.IS_WATERLOGGED)
-                        .get(h -> h.getValue(ConduitBlock.WATERLOGGED))
-                        .set((h, v) -> h.setValue(ConduitBlock.WATERLOGGED, v))
-                        .supports(h -> h.getBlock() instanceof ConduitBlock);
+    @Override
+    public OptionalInt bridge$getHighestMapId() {
+        final int id = this.usedAuxIds.getInt(Constants.Map.ID_COUNTS_KEY);
+        if (id == this.usedAuxIds.defaultReturnValue()) {
+            return OptionalInt.empty(); // Default return value is -1
+        }
+        return OptionalInt.of(id);
     }
-    // @formatter:on
+
 }

@@ -26,6 +26,7 @@ package org.spongepowered.common.map.decoration;
 
 import com.google.common.base.Preconditions;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.data.persistence.DataQuery;
 import org.spongepowered.api.data.persistence.DataView;
@@ -41,8 +42,9 @@ import org.spongepowered.common.util.Constants;
 import org.spongepowered.common.util.MapUtil;
 import org.spongepowered.math.vector.Vector2i;
 
+import java.util.Objects;
 
-public class SpongeMapDecorationBuilder implements MapDecoration.Builder {
+public final class SpongeMapDecorationBuilder implements MapDecoration.Builder {
     private @Nullable MapDecorationType type = null;
     private int x;
     private int y;
@@ -50,7 +52,7 @@ public class SpongeMapDecorationBuilder implements MapDecoration.Builder {
     private @Nullable Component customName = null;
 
     @Override
-    public MapDecoration.Builder type(MapDecorationType type) {
+    public MapDecoration.Builder type(final MapDecorationType type) {
         this.type = type;
         return this;
     }
@@ -66,7 +68,7 @@ public class SpongeMapDecorationBuilder implements MapDecoration.Builder {
     }
 
     @Override
-    public MapDecoration.Builder from(MapDecoration value) {
+    public MapDecoration.Builder from(final MapDecoration value) {
         Preconditions.checkNotNull(value, "MapDecoration cannot be null");
         this.type = value.type();
         this.x = value.position().x();
@@ -76,24 +78,28 @@ public class SpongeMapDecorationBuilder implements MapDecoration.Builder {
     }
 
     @Override
-    public MapDecoration.Builder rotation(MapDecorationOrientation rot) throws IllegalArgumentException {
+    public MapDecoration.Builder rotation(final MapDecorationOrientation rot) throws IllegalArgumentException {
         Preconditions.checkNotNull(rot, "Orientation cannot be null");
         this.rot = rot;
         return this;
     }
 
     @Override
-    public MapDecoration.Builder position(Vector2i position) throws IllegalArgumentException {
-        Preconditions.checkNotNull(position, "position cannot be null");
-        Preconditions.checkArgument(MapUtil.isInMapDecorationBounds(position.x()), "x not in bounds");
-        Preconditions.checkArgument(MapUtil.isInMapDecorationBounds(position.y()), "y not in bounds");
+    public MapDecoration.Builder position(final Vector2i position) throws IllegalArgumentException {
+        Objects.requireNonNull(position, "position cannot be null");
+        if (!MapUtil.isInMapDecorationBounds(position.x())) {
+            throw new IllegalArgumentException("x not in bounds");
+        }
+        if (!MapUtil.isInMapDecorationBounds(position.y())) {
+            throw new IllegalArgumentException("y not in bounds");
+        }
         this.x = position.x();
         this.y = position.y();
         return this;
     }
 
     @Override
-    public MapDecoration.Builder customName(Component customName) {
+    public MapDecoration.Builder customName(final Component customName) {
         this.customName = customName;
         return this;
     }
@@ -108,8 +114,8 @@ public class SpongeMapDecorationBuilder implements MapDecoration.Builder {
         }
         this.reset();
 
-        final byte type = getByteFromContainer(container, Constants.Map.DECORATION_TYPE);
-        final byte rot = getByteFromContainer(container, Constants.Map.DECORATION_ROTATION);
+        final byte type = this.getByteFromContainer(container, Constants.Map.DECORATION_TYPE);
+        final byte rot = this.getByteFromContainer(container, Constants.Map.DECORATION_ROTATION);
 
         final net.minecraft.world.level.saveddata.maps.MapDecoration.Type[] decorations = net.minecraft.world.level.saveddata.maps.MapDecoration.Type.values();
         final int possibleTypes = decorations.length;
@@ -128,14 +134,14 @@ public class SpongeMapDecorationBuilder implements MapDecoration.Builder {
         // We do not require X and Y to build, therefore we do not require them here.
         // They are mutable once it is created.
         if (container.contains(Constants.Map.DECORATION_X, Constants.Map.DECORATION_Y)) {
-            final byte x = getByteFromContainer(container, Constants.Map.DECORATION_X);
-            final byte y = getByteFromContainer(container, Constants.Map.DECORATION_Y);
+            final byte x = this.getByteFromContainer(container, Constants.Map.DECORATION_X);
+            final byte y = this.getByteFromContainer(container, Constants.Map.DECORATION_Y);
 
             this.position(Vector2i.from(x, y));
         }
 
         if (container.contains(Constants.Map.NAME)) {
-            final Component component = SpongeAdventure.GSON.deserialize(
+            final Component component = GsonComponentSerializer.gson().deserialize(
                     container.getString(Constants.Map.NAME)
                             .orElseThrow(() -> new InvalidDataException("Invalid data type for " + Constants.Map.NAME + ". Should be String"))
             );
@@ -152,12 +158,12 @@ public class SpongeMapDecorationBuilder implements MapDecoration.Builder {
 
     @Override
     public MapDecoration build() throws IllegalStateException {
-        Preconditions.checkNotNull(this.type, "Type has not been set");
-        MapDecoration decoration = (MapDecoration) new net.minecraft.world.level.saveddata.maps.MapDecoration(
-                ((SpongeMapDecorationType)type).getType(),
+        Objects.requireNonNull(this.type, "Type has not been set");
+        final MapDecoration decoration = (MapDecoration) new net.minecraft.world.level.saveddata.maps.MapDecoration(
+                ((SpongeMapDecorationType) this.type).getType(),
                 (byte)this.x, (byte)this.y, (byte) ((SpongeMapDecorationOrientation)this.rot).getOrientationNumber(),
                 this.customName == null ? null : SpongeAdventure.asVanilla(this.customName));
-        ((MapDecorationBridge)decoration).bridge$setPersistent(true); // Anything that comes out of this builder should be persistent
+        ((MapDecorationBridge) decoration).bridge$setPersistent(true); // Anything that comes out of this builder should be persistent
         return decoration;
     }
 }

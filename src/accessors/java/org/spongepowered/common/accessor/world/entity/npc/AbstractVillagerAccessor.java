@@ -22,34 +22,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.mixin.core.map;
+package org.spongepowered.common.accessor.world.entity.npc;
 
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import net.minecraft.world.level.saveddata.maps.MapIndex;
-import org.spongepowered.asm.mixin.Final;
+import net.minecraft.world.entity.npc.AbstractVillager;
+import net.minecraft.world.item.trading.MerchantOffers;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.common.bridge.map.MapIdTrackerBridge;
-import org.spongepowered.common.util.Constants;
+import org.spongepowered.asm.mixin.gen.Accessor;
 
-import java.util.Optional;
+@Mixin(AbstractVillager.class)
+public interface AbstractVillagerAccessor {
 
-@Mixin(MapIndex.class)
-public abstract class MapIdTrackerMixin implements MapIdTrackerBridge {
-
-	@Shadow @Final private Object2IntMap<String> usedAuxIds;
-
-	@Override
-	public void bridge$setHighestMapId(int id) {
-		this.usedAuxIds.put(Constants.Map.ID_COUNTS_KEY, id);
-	}
-
-	@Override
-	public Optional<Integer> bridge$getHighestMapId() {
-		int id = usedAuxIds.getInt(Constants.Map.ID_COUNTS_KEY);
-		if (id == usedAuxIds.defaultReturnValue()) {
-			return Optional.empty(); // Default return value is -1
-		}
-		return Optional.of(id);
-	}
+    @Accessor("offers") void accessor$offers(MerchantOffers offers);
 }

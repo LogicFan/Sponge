@@ -22,27 +22,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.data.provider.block.state;
+package org.spongepowered.common.adventure;
 
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.SignBlock;
-import net.minecraft.world.level.block.WallSignBlock;
-import org.spongepowered.api.data.Keys;
-import org.spongepowered.common.data.provider.DataProviderRegistrator;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
-public final class AbstractSignData {
+import java.util.function.Consumer;
 
-    private AbstractSignData() {
+@SuppressWarnings("UnstableApiUsage") // permitted provider
+public final class LegacyComponentSerializerProviderImpl implements LegacyComponentSerializer.Provider {
+    @Override
+    public @NonNull LegacyComponentSerializer legacyAmpersand() {
+        return LegacyComponentSerializer.builder()
+          .character(LegacyComponentSerializer.AMPERSAND_CHAR)
+          .flattener(ComponentFlattenerProvider.INSTANCE)
+          .build();
     }
 
-    // @formatter:off
-    public static void register(final DataProviderRegistrator registrator) {
-        registrator
-                .asImmutable(Block.class)
-                    .create(Keys.IS_ATTACHED)
-                        .get(h -> h instanceof WallSignBlock)
-                        .set((h, v) -> null)
-                        .supports(h -> h instanceof SignBlock);
+    @Override
+    public @NonNull LegacyComponentSerializer legacySection() {
+        return LegacyComponentSerializer.builder()
+          .character(LegacyComponentSerializer.SECTION_CHAR)
+          .flattener(ComponentFlattenerProvider.INSTANCE)
+          .build();
     }
-    // @formatter:on
+
+    @Override
+    public @NonNull Consumer<LegacyComponentSerializer.Builder> legacy() {
+        return builder -> {
+            builder.flattener(ComponentFlattenerProvider.INSTANCE);
+        };
+    }
 }
