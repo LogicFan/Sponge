@@ -35,12 +35,12 @@ val fabricAppLaunchConfig: NamedDomainObjectProvider<Configuration> = configurat
 val fabricInstallerConfig: Provider<Configuration> = configurations.register("installer")
 
 // Common source sets and configurations
-val launchConfig = commonProject.configurations.named("launch")
-val accessors = commonProject.sourceSets.named("accessors")
-val launch = commonProject.sourceSets.named("launch")
-val applaunch = commonProject.sourceSets.named("applaunch")
-val mixins = commonProject.sourceSets.named("mixins")
-val main = commonProject.sourceSets.named("main")
+val launchConfig: NamedDomainObjectProvider<Configuration> = commonProject.configurations.named("launch")
+val accessors: NamedDomainObjectProvider<SourceSet> = commonProject.sourceSets.named("accessors")
+val launch: NamedDomainObjectProvider<SourceSet> = commonProject.sourceSets.named("launch")
+val applaunch: NamedDomainObjectProvider<SourceSet> = commonProject.sourceSets.named("applaunch")
+val mixins: NamedDomainObjectProvider<SourceSet> = commonProject.sourceSets.named("mixins")
+val main: NamedDomainObjectProvider<SourceSet> = commonProject.sourceSets.named("main")
 
 // Fabric source sets
 val fabricInstaller by sourceSets.register("installer")
