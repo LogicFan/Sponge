@@ -1,5 +1,6 @@
 import org.jetbrains.gradle.ext.TaskTriggersConfig
 import org.spongepowered.gradle.impl.OutputDependenciesToJson
+import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
 
 plugins {
 	id("fabric-loom")
@@ -31,10 +32,12 @@ version = spongeImpl.generatePlatformBuildVersionString(apiVersion, minecraftVer
 val fabricLibrariesConfig: NamedDomainObjectProvider<Configuration> = configurations.register("libraries")
 val fabricAppLaunchConfig: NamedDomainObjectProvider<Configuration> = configurations.register("applaunch") {
 	extendsFrom(fabricLibrariesConfig.get())
-	// TODO: is it correct?
+	// add mod dependencies (i.e. fabric-loader)
 	extendsFrom(configurations.modImplementationMapped.get())
+	// add dependencies of fabric-loader
+	extendsFrom(configurations.named("loaderLibraries").get())
 }
-val fabricInstallerConfig: Provider<Configuration> = configurations.register("installer")
+val fabricInstallerConfig: NamedDomainObjectProvider<Configuration> = configurations.register("installer")
 
 // Common source sets and configurations
 val launchConfig: NamedDomainObjectProvider<Configuration> = commonProject.configurations.named("launch")
@@ -60,6 +63,64 @@ val fabricInstallerJava9 by sourceSets.register("installerJava9") {
 
 	dependencies.add(implementationConfigurationName, objects.fileCollection().from(fabricInstaller.output.classesDirs))
 }
+val fabricMain by sourceSets.named("main") {
+	// implementation (compile) dependencies
+	spongeImpl.applyNamedDependencyOnOutput(commonProject, accessors.get(), this, project, this.implementationConfigurationName)
+	spongeImpl.applyNamedDependencyOnOutput(commonProject, launch.get(), this, project, this.implementationConfigurationName)
+	spongeImpl.applyNamedDependencyOnOutput(commonProject, applaunch.get(), this, project, this.implementationConfigurationName)
+	configurations.named(implementationConfigurationName) {
+		extendsFrom(fabricLibrariesConfig.get())
+	}
+}
+val fabricLaunch by sourceSets.register("launch") {
+	// implementation (compile) dependencies
+	spongeImpl.applyNamedDependencyOnOutput(commonProject, launch.get(), this, project, this.implementationConfigurationName)
+	spongeImpl.applyNamedDependencyOnOutput(commonProject, applaunch.get(), this, project, this.implementationConfigurationName)
+	spongeImpl.applyNamedDependencyOnOutput(commonProject, main.get(), this, project, this.implementationConfigurationName)
+	spongeImpl.applyNamedDependencyOnOutput(project, this, fabricMain, project, fabricMain.implementationConfigurationName)
+
+	configurations.named(implementationConfigurationName) {
+		extendsFrom(fabricAppLaunchConfig.get())
+	}
+}
+val fabricMixins by sourceSets.register("mixins") {
+	// implementation (compile) dependencies
+	spongeImpl.applyNamedDependencyOnOutput(commonProject, mixins.get(), this, project, this.implementationConfigurationName)
+	spongeImpl.applyNamedDependencyOnOutput(commonProject, accessors.get(), this, project, this.implementationConfigurationName)
+	spongeImpl.applyNamedDependencyOnOutput(commonProject, launch.get(), this, project, this.implementationConfigurationName)
+	spongeImpl.applyNamedDependencyOnOutput(commonProject, applaunch.get(), this, project, this.implementationConfigurationName)
+	spongeImpl.applyNamedDependencyOnOutput(commonProject, main.get(), this, project, this.implementationConfigurationName)
+	spongeImpl.applyNamedDependencyOnOutput(project, fabricMain, this, project, this.implementationConfigurationName)
+	spongeImpl.applyNamedDependencyOnOutput(project, fabricLaunch, this, project, this.implementationConfigurationName)
+}
+val fabricAppLaunch by sourceSets.register("applaunch") {
+	// implementation (compile) dependencies
+	spongeImpl.applyNamedDependencyOnOutput(commonProject, applaunch.get(), this, project, this.implementationConfigurationName)
+	spongeImpl.applyNamedDependencyOnOutput(commonProject, launch.get(), fabricLaunch, project, this.implementationConfigurationName)
+	spongeImpl.applyNamedDependencyOnOutput(project, fabricInstaller, this, project, this.implementationConfigurationName)
+	spongeImpl.applyNamedDependencyOnOutput(project, this, fabricLaunch, project, fabricLaunch.implementationConfigurationName)
+	// runtime dependencies - literally add the rest of the project, because we want to launch the game
+	spongeImpl.applyNamedDependencyOnOutput(project, fabricMixins, this, project, this.runtimeOnlyConfigurationName)
+	spongeImpl.applyNamedDependencyOnOutput(project, fabricLaunch, this, project, this.runtimeOnlyConfigurationName)
+	spongeImpl.applyNamedDependencyOnOutput(commonProject, mixins.get(), this, project, this.runtimeOnlyConfigurationName)
+	spongeImpl.applyNamedDependencyOnOutput(commonProject, main.get(), this, project, this.runtimeOnlyConfigurationName)
+	spongeImpl.applyNamedDependencyOnOutput(commonProject, accessors.get(), this, project, this.runtimeOnlyConfigurationName)
+	spongeImpl.applyNamedDependencyOnOutput(project, fabricMain, this, project, this.runtimeOnlyConfigurationName)
+}
+val fabricMixinsImplementation by configurations.named(fabricMixins.implementationConfigurationName) {
+	extendsFrom(fabricAppLaunchConfig.get())
+}
+configurations.named(fabricInstaller.implementationConfigurationName) {
+	extendsFrom(fabricInstallerConfig.get())
+}
+configurations.named(fabricAppLaunch.implementationConfigurationName) {
+	extendsFrom(fabricAppLaunchConfig.get())
+	// remove this line, since minecraft itself is not needed
+	// extendsFrom(launchConfig.get())
+}
+val vanillaAppLaunchRuntime by configurations.named(fabricAppLaunch.runtimeOnlyConfigurationName)
+
+val mixinConfigs: MutableSet<String> = spongeImpl.mixinConfigurations
 
 configurations.named(fabricInstaller.implementationConfigurationName) {
 	extendsFrom(fabricInstallerConfig.get())
@@ -133,6 +194,12 @@ dependencies {
 	libraries("org.jline:jline-reader:$jlineVersion")
 	libraries("org.jline:jline-terminal-jansi:$jlineVersion")
 	libraries("org.spongepowered:timings:$timingsVersion")
+
+	testplugins?.also {
+		vanillaAppLaunchRuntime(project(it.path)) {
+			exclude(group = "org.spongepowered")
+		}
+	}
 }
 
 val fabricManifest = the<JavaPluginConvention>().manifest {
@@ -210,8 +277,10 @@ tasks {
 
 	val downloadNotNeeded = configurations.register("downloadNotNeeded") {
 		extendsFrom(fabricInstallerConfig.get())
-		// TODO: is it correct?
+		// exclude mod dependencies (i.e. fabric-loader)
 		extendsFrom(configurations.modImplementationMapped.get())
+		// exclude dependencies of fabric-loader
+		extendsFrom(configurations.named("loaderLibraries").get())
 	}
 
 	val emitDependencies by registering(OutputDependenciesToJson::class) {
@@ -228,6 +297,8 @@ tasks {
 		archiveClassifier.set("universal-dev")
 
 		configurations = listOf(project.configurations.getByName(fabricInstaller.runtimeClasspathConfigurationName))
+
+		transform(Log4j2PluginsCacheFileTransformer::class.java)
 
 		manifest {
 			attributes(mapOf(
