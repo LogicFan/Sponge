@@ -43,7 +43,7 @@ public class ModMain implements ModInitializer, ClientModInitializer, DedicatedS
 	@Override
 	public void onPreLaunch() {
 		String[] args = System.getProperty("sun.java.command").split(" ");
-		LOGGER.info("Invoking SpongeFabric installer with args {}", (Object) args);
+		LOGGER.info("Invoking SpongeFabric Installer with args {}", (Object) args);
 
 		invokeMain("org.spongepowered.fabric.installer.InstallerMain", args);
 	}
@@ -55,11 +55,15 @@ public class ModMain implements ModInitializer, ClientModInitializer, DedicatedS
 
 	@Override
 	public void onInitializeClient() {
+		LOGGER.info("Invoking SpongeFabric ClientLaunch");
+
 		invokeMain("org.spongepowered.fabric.applaunch.handler.ClientLaunchHandler", new String[]{});
 	}
 
 	@Override
 	public void onInitializeServer() {
+		LOGGER.info("Invoking SpongeFabric ServerLaunch");
+
 		invokeMain("org.spongepowered.fabric.applaunch.handler.ServerLaunchHandler", new String[]{});
 	}
 
