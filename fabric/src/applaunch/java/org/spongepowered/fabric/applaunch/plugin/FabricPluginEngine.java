@@ -25,7 +25,14 @@
 package org.spongepowered.fabric.applaunch.plugin;
 
 import org.spongepowered.common.applaunch.plugin.PluginEngine;
+import org.spongepowered.plugin.PluginCandidate;
 import org.spongepowered.plugin.PluginEnvironment;
+import org.spongepowered.plugin.PluginLanguageService;
+import org.spongepowered.plugin.PluginResource;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class FabricPluginEngine implements PluginEngine {
 
@@ -38,5 +45,9 @@ public class FabricPluginEngine implements PluginEngine {
 	@Override
 	public PluginEnvironment getPluginEnvironment() {
 		return environment;
+	}
+
+	public Map<PluginLanguageService<PluginResource>, List<PluginCandidate<PluginResource>>> getCandidates() {
+		return new HashMap<>();
 	}
 }
