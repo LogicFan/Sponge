@@ -34,7 +34,7 @@ public class ServerLaunchHandler {
 		if (AppCommandLine.launchTarget.equals(AppLaunchTargets.SERVER_DEVELOPMENT) || AppCommandLine.launchTarget.equals(AppLaunchTargets.SERVER_PRODUCTION)) {
 			Boolean dev = AppCommandLine.launchTarget.equals(AppLaunchTargets.SERVER_DEVELOPMENT);
 
-			Class.forName("org.spongepowered.fabric.launch.ServerLaunch")
+			Class.forName("org.spongepowered.fabric.launch.DedicatedServerLaunch")
 					.getMethod("launch", FabricPluginEngine.class, Boolean.class, String[].class)
 					.invoke(null, Main.getInstance().getPluginEngine(), dev, args);
 		}
