@@ -221,9 +221,6 @@ tasks {
 		manifest{
 			from(fabricManifest)
 			attributes(
-					"Premain-Class" to "org.spongepowered.fabric.installer.Agent",
-					"Agent-Class" to "org.spongepowered.fabric.installer.Agent",
-					"Launcher-Agent-Class" to "org.spongepowered.fabric.installer.Agent",
 					"Multi-Release" to true
 			)
 		}
@@ -289,10 +286,7 @@ tasks {
 					// "Access-Widener" to "common.accesswidener",
 					// "Main-Class" to "org.spongepowered.fabric.installer.InstallerMain",
 					"Launch-Target" to "sponge_server_prod",
-					"Multi-Release" to true,
-					"Premain-Class" to "org.spongepowered.fabric.installer.Agent",
-					"Agent-Class" to "org.spongepowered.fabric.installer.Agent",
-					"Launcher-Agent-Class" to "org.spongepowered.fabric.installer.Agent"
+					"Multi-Release" to true
 			))
 			from(fabricManifest)
 		}
