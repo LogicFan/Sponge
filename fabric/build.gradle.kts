@@ -305,6 +305,7 @@ tasks {
 		from(sourceSets.main.map { it.output })
 		from(fabricInstaller.output)
 		from(fabricAppLaunch.output)
+		from(fabricLaunch.output)
 
 		// We cannot have modules in a shaded jar
 		exclude("META-INF/versions/*/module-info.class")
