@@ -24,20 +24,56 @@
  */
 package org.spongepowered.fabric;
 
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.api.ModInitializer;
 
+import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
 import net.minecraft.server.Main;
-import org.spongepowered.common.SpongeBootstrap;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.spongepowered.common.applaunch.plugin.PluginEngine;
+import org.spongepowered.fabric.launch.ClientLaunch;
 
-public class ModMain implements ModInitializer {
+import java.lang.reflect.InvocationTargetException;
+
+public class ModMain implements ModInitializer, ClientModInitializer, DedicatedServerModInitializer, PreLaunchEntrypoint {
+	private static final Logger LOGGER = LogManager.getLogger(ModMain.class);
+
+	@Override
+	public void onPreLaunch() {
+		String[] args = System.getProperty("sun.java.command").split(" ");
+		LOGGER.info("Invoking SpongeFabric installer with args {}", (Object) args);
+
+		invokeMain("org.spongepowered.fabric.installer.InstallerMain", args);
+	}
+
 	@Override
 	public void onInitialize() {
-		// This code runs as soon as Minecraft is in a mod-load-ready state.
-		// However, some things (like resources) may still be uninitialized.
-		// Proceed with mild caution.
-
 		System.out.println("Hello Fabric world!");
+	}
 
-		SpongeBootstrap.perform("Server", () -> Main.main(new String[]{}));
+	@Override
+	public void onInitializeClient() {
+		invokeMain("org.spongepowered.fabric.applaunch.handler.ClientLaunchHandler", new String[]{});
+	}
+
+	@Override
+	public void onInitializeServer() {
+		invokeMain("org.spongepowered.fabric.applaunch.handler.ServerLaunchHandler", new String[]{});
+	}
+
+	private static void invokeMain(final String className, final String[] args) {
+		try {
+			Class.forName(className)
+					.getMethod("main", String[].class)
+					.invoke(null, (Object) args);
+		} catch (final InvocationTargetException ex) {
+			LOGGER.error("Failed to invoke main class {} due to an error", className, ex.getCause());
+			System.exit(1);
+		} catch (final ClassNotFoundException | NoSuchMethodException | IllegalAccessException ex) {
+			LOGGER.error("Failed to invoke main class {} due to an error", className, ex);
+			System.exit(1);
+		}
 	}
 }

@@ -23,7 +23,7 @@
       "org.spongepowered.fabric.ModMain"
     ],
     "preLaunch": [
-      "org.spongepowered.fabric.ModPreLaunch"
+      "org.spongepowered.fabric.ModMain"
     ]
   },
   "mixins": [
