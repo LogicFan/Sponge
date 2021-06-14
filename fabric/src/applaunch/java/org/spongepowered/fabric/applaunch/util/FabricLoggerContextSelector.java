@@ -22,36 +22,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.fabric.installer;
+package org.spongepowered.fabric.applaunch.util;
 
-import com.sun.tools.attach.VirtualMachine;
-import org.tinylog.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.async.AsyncLoggerContextSelector;
+import org.apache.logging.log4j.core.selector.ContextSelector;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-import java.io.File;
-import java.lang.instrument.Instrumentation;
-import java.net.URISyntaxException;
+import java.net.URI;
 
-public class AgentLoader {
-    public static void load() {
-        try {
-            File agent = new File(Agent.class.getProtectionDomain().getCodeSource().getLocation()
-                    .toURI());
-            Logger.info("Locate Java Agent at {}", agent.toPath());
+/**
+ * Sponge's hooks into Log4J to customize rendering.
+ *
+ * <p>Because Log4j needs to be used both inside and outside the transforming
+ * class loader, we hook into Log4J at the context selector level. This lets us
+ * deliver a different context within the transformed environment than
+ * outside it.</p>
+ */
+public class FabricLoggerContextSelector extends AsyncLoggerContextSelector implements ContextSelector {
 
-            long pid = ProcessHandle.current().pid();
-            Logger.info("Current process ID is {}", pid);
-
-            VirtualMachine vm = VirtualMachine.attach(String.valueOf(pid));
-            vm.loadAgent(agent.getAbsolutePath());
-            vm.detach();
-
-            Logger.info("Java Agent is successfully loaded.");
-        } catch (URISyntaxException e) {
-            throw new RuntimeException("Cannot locate Agent class file location", e);
-        } catch (SecurityException e) {
-            throw new RuntimeException("Do not have sufficient permission to load Java Agent.", e);
-        } catch (Exception e) {
-            throw new RuntimeException("Load Java Agent fail.", e);
-        }
+    @Override
+    public LoggerContext getContext(final String fqcn, final @Nullable ClassLoader loader, final boolean currentContext, final URI configLocation) {
+        // TODO: add custom log4j hook, use sponge logger only if it is loaded by loader
+        return super.getContext(fqcn, loader, currentContext, configLocation);
     }
 }

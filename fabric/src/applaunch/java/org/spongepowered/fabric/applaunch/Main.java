@@ -65,6 +65,7 @@ public final class Main {
     }
 
     public void run() throws IOException {
+
         final String implementationVersion = PluginEnvironment.class.getPackage().getImplementationVersion();
 
         this.pluginEngine.getPluginEnvironment().blackboard()

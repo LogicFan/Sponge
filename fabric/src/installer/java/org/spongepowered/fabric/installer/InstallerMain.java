@@ -47,7 +47,6 @@ public final class InstallerMain {
 
     public void run() {
         try  {
-            AgentLoader.load();
             this.downloadAndRun();
         } catch (final Exception ex) {
             Logger.error(ex, "Failed to download Sponge libraries and/or Minecraft");
@@ -71,14 +70,11 @@ public final class InstallerMain {
             .map(LibraryManager.Library::getFile)
             .forEach(path -> {
                 Logger.debug("Adding jar {} to classpath", path);
-                Agent.addJarToClasspath(path);
+                KnotClassLoaderUtils.addJarToClasspath(path);
             });
 
         final List<String> gameArgs = new ArrayList<>(LauncherCommandLine.remainingArgs);
         Collections.addAll(gameArgs, this.installer.getLauncherConfig().args.split(" "));
-
-        // Suppress illegal reflection warnings on newer java
-        Agent.crackModules();
 
         final String className = "org.spongepowered.fabric.applaunch.Main";
         InstallerMain.invokeMain(className, gameArgs.toArray(new String[0]));

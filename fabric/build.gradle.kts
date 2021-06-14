@@ -49,20 +49,6 @@ val main: NamedDomainObjectProvider<SourceSet> = commonProject.sourceSets.named(
 
 // Fabric source sets
 val fabricInstaller by sourceSets.register("installer")
-val fabricInstallerJava9 by sourceSets.register("installerJava9") {
-	this.java.setSrcDirs(setOf("src/installer/java9"))
-	compileClasspath += fabricInstaller.compileClasspath
-	compileClasspath += fabricInstaller.runtimeClasspath
-
-	tasks.named(compileJavaTaskName, JavaCompile::class) {
-		options.release.set(9)
-		if (JavaVersion.current() < JavaVersion.VERSION_11) {
-			javaCompiler.set(javaToolchains.compilerFor { languageVersion.set(JavaLanguageVersion.of(11)) })
-		}
-	}
-
-	dependencies.add(implementationConfigurationName, objects.fileCollection().from(fabricInstaller.output.classesDirs))
-}
 val fabricMain by sourceSets.named("main") {
 	// implementation (compile) dependencies
 	spongeImpl.applyNamedDependencyOnOutput(commonProject, accessors.get(), this, project, this.implementationConfigurationName)
@@ -140,7 +126,8 @@ dependencies {
 	val asmVersion: String by project
 	val guavaVersion: String by project
 	val jlineVersion: String by project
-	val log4jVersion: String by project
+	// val log4jVersion: String by project
+	val log4jVersion: String = "2.8.1"
 	val mixinVersion: String by project
 	val modlauncherVersion: String by project
 	val pluginSpiVersion: String by project
@@ -241,9 +228,6 @@ tasks {
 			)
 		}
 		from(fabricInstaller.output)
-		into("META-INF/versions/9/") {
-			from(fabricInstallerJava9.output)
-		}
 	}
 
 	// copy and convert installer/templates/** into src
@@ -320,9 +304,6 @@ tasks {
 		from(commonProject.sourceSets.named("applaunch").map { it.output })
 		from(sourceSets.main.map { it.output })
 		from(fabricInstaller.output)
-		from(fabricInstallerJava9.output) {
-			into("META-INF/versions/9/")
-		}
 		from(fabricAppLaunch.output)
 
 		// We cannot have modules in a shaded jar
