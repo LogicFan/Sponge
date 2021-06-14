@@ -323,6 +323,7 @@ tasks {
 		from(fabricInstallerJava9.output) {
 			into("META-INF/versions/9/")
 		}
+		from(fabricAppLaunch.output)
 
 		// We cannot have modules in a shaded jar
 		exclude("META-INF/versions/*/module-info.class")

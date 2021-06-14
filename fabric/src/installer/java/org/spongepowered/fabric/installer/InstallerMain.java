@@ -80,9 +80,8 @@ public final class InstallerMain {
         // Suppress illegal reflection warnings on newer java
         Agent.crackModules();
 
-        System.out.println("installer done!!!!!");
-//        final String className = "org.spongepowered.vanilla.applaunch.Main";
-//        InstallerMain.invokeMain(className, gameArgs.toArray(new String[0]));
+        final String className = "org.spongepowered.fabric.applaunch.Main";
+        InstallerMain.invokeMain(className, gameArgs.toArray(new String[0]));
     }
 
     private static void invokeMain(final String className, final String[] args) {

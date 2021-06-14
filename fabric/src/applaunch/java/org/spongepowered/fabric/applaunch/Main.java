@@ -28,8 +28,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.fusesource.jansi.AnsiConsole;
 import org.spongepowered.common.applaunch.config.core.SpongeConfigs;
-import org.spongepowered.fabric.applaunch.plugin.VanillaPluginEngine;
-import org.spongepowered.fabric.applaunch.util.ArgumentList;
+import org.spongepowered.fabric.applaunch.plugin.FabricPluginEngine;
 import org.spongepowered.plugin.PluginEnvironment;
 import org.spongepowered.plugin.PluginKeys;
 
@@ -48,12 +47,12 @@ public final class Main {
     private static Main instance;
 
     private final Logger logger;
-    private final VanillaPluginEngine pluginEngine;
+    private final FabricPluginEngine pluginEngine;
 
     public Main() {
         Main.instance = this;
         this.logger = LogManager.getLogger("App Launch");
-        this.pluginEngine = new VanillaPluginEngine(new PluginEnvironment());
+        this.pluginEngine = new FabricPluginEngine(new PluginEnvironment());
     }
 
     public static void main(final String[] args) throws Exception {
@@ -85,12 +84,10 @@ public final class Main {
         }
         this.pluginEngine.getPluginEnvironment().blackboard().getOrCreate(PluginKeys.PLUGIN_DIRECTORIES, () -> pluginDirectories);
 
-        this.logger.info("Transitioning to ModLauncher, please wait...");
-        final ArgumentList lst = ArgumentList.from(AppCommandLine.RAW_ARGS);
-        // Launcher.main(lst.getArguments());
+        this.logger.info("applaunch done!");
     }
 
-    public VanillaPluginEngine getPluginEngine() {
+    public FabricPluginEngine getPluginEngine() {
         return this.pluginEngine;
     }
 }
