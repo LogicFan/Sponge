@@ -49,6 +49,7 @@ public class KnotClassLoaderUtils {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
 
         try {
+            // TODO: this is non-public fabric loader api.
             Method addURL = loader.getClass().getMethod("addURL", URL.class);
             addURL.setAccessible(true);
             addURL.invoke(loader, jar.toUri().toURL());
