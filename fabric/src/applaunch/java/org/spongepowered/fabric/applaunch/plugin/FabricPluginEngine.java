@@ -148,4 +148,14 @@ public class FabricPluginEngine implements PluginEngine {
 			this.languageServices.put(next.name(), next);
 		}
 	}
+
+	void locatePluginResources() {
+		for (final Map.Entry<String, PluginResourceLocatorService<PluginResource>> locatorEntry : this.locatorServices.entrySet()) {
+			final PluginResourceLocatorService<PluginResource> locatorService = locatorEntry.getValue();
+			final List<PluginResource> resources = locatorService.locatePluginResources(this.pluginEnvironment);
+			if (!resources.isEmpty()) {
+				this.locatorResources.put(locatorEntry.getKey(), resources);
+			}
+		}
+	}
 }
