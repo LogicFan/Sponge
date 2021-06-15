@@ -202,9 +202,22 @@ val fabricManifest = the<JavaPluginConvention>().manifest {
 
 tasks {
 	withType(ProcessResources::class) {
-		inputs.properties(Pair("version", project.version))
+		inputs.property("version.api", apiVersion)
+		inputs.property("version.minecraft", minecraftVersion)
+		inputs.property("version.fabric", project.version)
+
+		// for fabric mod
 		filesMatching("fabric.mod.json") {
-			expand(Pair("version", project.version))
+			expand("version" to project.version)
+		}
+
+		// for sponge plugin
+		filesMatching("META-INF/plugins.json") {
+			expand(
+					"apiVersion" to apiVersion,
+					"minecraftVersion" to minecraftVersion,
+					"version" to project.version
+			)
 		}
 	}
 	withType(JavaCompile::class).configureEach {
