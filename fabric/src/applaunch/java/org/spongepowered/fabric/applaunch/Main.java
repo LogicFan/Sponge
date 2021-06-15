@@ -84,6 +84,8 @@ public final class Main {
             pluginDirectories.add(pluginsDirectory);
         }
         this.pluginEngine.getPluginEnvironment().blackboard().getOrCreate(PluginKeys.PLUGIN_DIRECTORIES, () -> pluginDirectories);
+
+        this.pluginEngine.configure();
     }
 
     public FabricPluginEngine getPluginEngine() {
