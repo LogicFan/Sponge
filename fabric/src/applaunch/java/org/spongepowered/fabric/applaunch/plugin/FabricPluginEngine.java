@@ -82,14 +82,14 @@ public class FabricPluginEngine implements PluginEngine {
 	}
 
 	public void configure() {
-		this.getPluginEnvironment().logger().info("SpongePowered PLUGIN Subsystem Version={} Source={}",
+		this.pluginEnvironment.logger().info("SpongePowered PLUGIN Subsystem Version={} Source={}",
 				this.pluginSubsystemVersion(), this.codeSource());
 
 		this.discoverLocatorServices();
-		this.getLocatorServices().forEach((k, v) -> this.getPluginEnvironment()
+		this.getLocatorServices().forEach((k, v) -> this.pluginEnvironment
 				.logger().info("Plugin resource locator '{}' found.", k));
 		this.discoverLanguageServices();
-		this.getLanguageServices().forEach((k, v) -> this.getPluginEnvironment()
+		this.getLanguageServices().forEach((k, v) -> this.pluginEnvironment
 				.logger().info("Plugin language loader '{}' found.", k));
 
 		for (final Map.Entry<String, PluginLanguageService<PluginResource>> entry : this.languageServices.entrySet()) {
@@ -97,10 +97,13 @@ public class FabricPluginEngine implements PluginEngine {
 		}
 
 		this.locatePluginResources();
+		this.createPluginCandidates();
+
+		// TODO: process plugins
 	}
 
 	String pluginSubsystemVersion() {
-		return this.getPluginEnvironment().blackboard().get(PluginKeys.VERSION).orElse("Unknown");
+		return this.pluginEnvironment.blackboard().get(PluginKeys.VERSION).orElse("Unknown");
 	}
 
 	String codeSource() {
@@ -155,6 +158,27 @@ public class FabricPluginEngine implements PluginEngine {
 			final List<PluginResource> resources = locatorService.locatePluginResources(this.pluginEnvironment);
 			if (!resources.isEmpty()) {
 				this.locatorResources.put(locatorEntry.getKey(), resources);
+			}
+		}
+	}
+
+	void createPluginCandidates() {
+		for (final Map.Entry<String, PluginLanguageService<PluginResource>> languageEntry : this.languageServices.entrySet()) {
+			final PluginLanguageService<PluginResource> languageService = languageEntry.getValue();
+			for (final Map.Entry<String, List<PluginResource>> resourcesEntry : this.locatorResources.entrySet()) {
+
+				for (final PluginResource pluginResource : resourcesEntry.getValue()) {
+					try {
+						final List<PluginCandidate<PluginResource>> candidates =
+								languageService.createPluginCandidates(this.pluginEnvironment, pluginResource);
+						if (candidates.isEmpty()) {
+							continue;
+						}
+
+						this.pluginCandidates.computeIfAbsent(languageService, k -> new LinkedList<>()).addAll(candidates);
+					} catch (ClassCastException ignored) {
+					}
+				}
 			}
 		}
 	}
