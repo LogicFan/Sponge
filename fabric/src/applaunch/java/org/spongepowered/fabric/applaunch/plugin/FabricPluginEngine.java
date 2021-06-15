@@ -95,13 +95,15 @@ public class FabricPluginEngine implements PluginEngine {
 		for (final Map.Entry<String, PluginLanguageService<PluginResource>> entry : this.languageServices.entrySet()) {
 			entry.getValue().initialize(this.pluginEnvironment);
 		}
+
+		this.locatePluginResources();
 	}
 
-	private String pluginSubsystemVersion() {
+	String pluginSubsystemVersion() {
 		return this.getPluginEnvironment().blackboard().get(PluginKeys.VERSION).orElse("Unknown");
 	}
 
-	private String codeSource() {
+	String codeSource() {
 		try {
 			return this.getClass().getProtectionDomain().getCodeSource().getLocation().toString();
 		} catch (final Throwable th) {
@@ -109,16 +111,16 @@ public class FabricPluginEngine implements PluginEngine {
 		}
 	}
 
-	public void discoverLocatorServices() {
+	void discoverLocatorServices() {
 		@SuppressWarnings("unchecked")
 		final ServiceLoader<PluginResourceLocatorService<PluginResource>> serviceLoader = (ServiceLoader<PluginResourceLocatorService<PluginResource>>) (Object) ServiceLoader.load(
-				PluginResourceLocatorService.class, null);
+				PluginResourceLocatorService.class, FabricPluginEngine.class.getClassLoader());
 
-		for (final Iterator<PluginResourceLocatorService<PluginResource>> iter = serviceLoader.iterator(); iter.hasNext(); ) {
+		for (final Iterator<PluginResourceLocatorService<PluginResource>> it = serviceLoader.iterator(); it.hasNext(); ) {
 			final PluginResourceLocatorService<PluginResource> next;
 
 			try {
-				next = iter.next();
+				next = it.next();
 			} catch (final ServiceConfigurationError e) {
 				this.pluginEnvironment.logger().error("Error encountered initializing plugin resource locator!", e);
 				continue;
@@ -128,7 +130,7 @@ public class FabricPluginEngine implements PluginEngine {
 		}
 	}
 
-	public void discoverLanguageServices() {
+	void discoverLanguageServices() {
 		@SuppressWarnings("unchecked")
 		final ServiceLoader<PluginLanguageService<PluginResource>> serviceLoader = (ServiceLoader<PluginLanguageService<PluginResource>>) (Object) ServiceLoader.load(
 				PluginLanguageService.class, FabricPluginEngine.class.getClassLoader());
