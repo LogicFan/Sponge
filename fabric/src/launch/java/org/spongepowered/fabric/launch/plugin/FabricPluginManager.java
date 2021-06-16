@@ -104,6 +104,7 @@ public final class FabricPluginManager implements SpongePluginManager {
         this.sortedPlugins.add(plugin);
     }
 
+    @SuppressWarnings("unchecked")
     public void loadPlugins(final FabricPluginEngine engine) {
         for (final Map.Entry<PluginLanguageService<PluginResource>, List<PluginCandidate<PluginResource>>> languageCandidates : engine.getCandidates().entrySet()) {
             final PluginLanguageService<PluginResource> languageService = languageCandidates.getKey();
