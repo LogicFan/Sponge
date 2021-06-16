@@ -211,10 +211,11 @@ tasks {
 		manifest.from(fabricManifest)
 	}
 
+	// this is how to get loaderLibraries
 	register("123") {
 		doLast {
 			println("123123")
-			configurations.named("loaderLibraries").get().forEach {
+			configurations.named("loaderLibraries").get().allDependencies.forEach {
 				println(it.name)
 			}
 		}
@@ -224,59 +225,6 @@ tasks {
 		archiveClassifier.set("universal-dev")
 
 		dependencies {
-			//
-			exclude("ca.weblite:java-objc-bridge")
-			exclude("com.google.code.gson:gson")
-			exclude("com.google.guava:guava")
-			exclude("com.google.jimfs:jimfs")
-			exclude("com.ibm.icu:icu4j")
-			exclude("com.mojang:authlib")
-			exclude("com.mojang:brigadier")
-			exclude("com.mojang:datafixerupper")
-			exclude("com.mojang:javabridge")
-			exclude("com.mojang:patchy")
-			exclude("com.mojang:text2speech")
-			exclude("commons-codec:commons-codec")
-			exclude("commons-io:commons-io")
-			exclude("commons-logging:commons-logging")
-			exclude("io.netty:netty-all")
-			exclude("it.unimi.dsi:fastutil")
-			exclude("net.fabricmc:access-widener")
-			exclude("net.fabricmc:fabric-loader-sat4j")
-			exclude("net.fabricmc:sponge-mixin")
-			exclude("net.fabricmc:tiny-mappings-parser")
-			exclude("net.fabricmc:tiny-remapper")
-			exclude("net.java.dev.jna:jna")
-			exclude("net.java.dev.jna:platform")
-			exclude("net.java.jinput:jinput")
-			exclude("net.java.jutils:jutils")
-			exclude("net.sf.jopt-simple:jopt-simple")
-			exclude("org.apache.commons:commons-compress")
-			exclude("org.apache.commons:commons-lang3")
-			exclude("org.apache.httpcomponents:httpclient")
-			exclude("org.apache.httpcomponents:httpcore")
-			exclude("org.apache.logging.log4j:log4j-api")
-			exclude("org.apache.logging.log4j:log4j-core")
-			exclude("org.lwjgl:lwjgl-glfw")
-			exclude("org.lwjgl:lwjgl-glfw")
-			exclude("org.lwjgl:lwjgl-jemalloc")
-			exclude("org.lwjgl:lwjgl-jemalloc")
-			exclude("org.lwjgl:lwjgl-openal")
-			exclude("org.lwjgl:lwjgl-openal")
-			exclude("org.lwjgl:lwjgl-opengl")
-			exclude("org.lwjgl:lwjgl-opengl")
-			exclude("org.lwjgl:lwjgl-stb")
-			exclude("org.lwjgl:lwjgl-stb")
-			exclude("org.lwjgl:lwjgl-tinyfd")
-			exclude("org.lwjgl:lwjgl-tinyfd")
-			exclude("org.lwjgl:lwjgl")
-			exclude("org.lwjgl:lwjgl")
-			exclude("org.ow2.asm:asm-analysis")
-			exclude("org.ow2.asm:asm-commons")
-			exclude("org.ow2.asm:asm-tree")
-			exclude("org.ow2.asm:asm-util")
-			exclude("org.ow2.asm:asm")
-			exclude("oshi-project:oshi-core")
 		}
 
 		manifest {
