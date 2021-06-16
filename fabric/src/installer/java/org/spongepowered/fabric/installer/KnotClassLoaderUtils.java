@@ -39,10 +39,8 @@ import java.util.Arrays;
 import java.util.jar.JarFile;
 
 /**
- * Agent, used to add downloaded jars to the system classpath and open modules
- * for deep reflection.
- *
- * <p>See the JDK9+ counterpart in src/installer/java9</p>
+ * {@code KnotClassLoaderInterface} is a non-public API of fabric loader,
+ * used to add downloaded jars to the classpath.
  */
 public class KnotClassLoaderUtils {
     static void addJarToClasspath(final Path jar) {
