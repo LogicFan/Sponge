@@ -26,7 +26,6 @@ package org.spongepowered.fabric.launch;
 
 import com.google.inject.Stage;
 import org.spongepowered.common.SpongeBootstrap;
-import org.spongepowered.fabric.applaunch.Main;
 import org.spongepowered.fabric.applaunch.plugin.FabricPluginEngine;
 
 public final class DedicatedServerLaunch extends FabricLaunch {
