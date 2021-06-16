@@ -24,8 +24,7 @@
     "client":    ["org.spongepowered.fabric.ModMain"],
     "server":    ["org.spongepowered.fabric.ModMain"]
   },
-  "mixins": [
-  ],
+  "mixins": ["${mixinConfigs}"],
 
   "depends": {
     "fabricloader": ">=0.7.4",

@@ -156,14 +156,14 @@ dependencies {
 	appLaunch("org.spongepowered:spongeapi:$apiVersion")
 	appLaunch(platform("net.kyori:adventure-bom:$apiAdventureVersion"))
 	appLaunch("net.kyori:adventure-serializer-configurate4")
-	appLaunch("org.spongepowered:mixin:$mixinVersion")
-	appLaunch("org.ow2.asm:asm-util:$asmVersion")
-	appLaunch("org.ow2.asm:asm-tree:$asmVersion")
+	// appLaunch("org.spongepowered:mixin:$mixinVersion")
+	// appLaunch("org.ow2.asm:asm-util:$asmVersion")
+	// appLaunch("org.ow2.asm:asm-tree:$asmVersion")
 	appLaunch("com.google.guava:guava:$guavaVersion")
 	appLaunch("org.spongepowered:plugin-spi:$pluginSpiVersion")
 	appLaunch("javax.inject:javax.inject:1")
-	appLaunch("org.apache.logging.log4j:log4j-api:$log4jVersion")
-	appLaunch("org.apache.logging.log4j:log4j-core:$log4jVersion")
+	// appLaunch("org.apache.logging.log4j:log4j-api:$log4jVersion")
+	// appLaunch("org.apache.logging.log4j:log4j-core:$log4jVersion")
 	appLaunch("com.lmax:disruptor:3.4.2")
 	appLaunch("com.zaxxer:HikariCP:2.6.3")
 	appLaunch("org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion")
@@ -214,7 +214,10 @@ tasks {
 
 		// process Fabric mod file
 		filesMatching("fabric.mod.json") {
-			expand("version" to project.version)
+			expand(
+					"version" to project.version,
+					"mixinConfigs" to mixinConfigs.joinToString("\", \"")
+			)
 		}
 
 		// process Sponge plugin file
