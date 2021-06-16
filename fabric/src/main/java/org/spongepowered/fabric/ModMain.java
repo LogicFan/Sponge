@@ -45,7 +45,7 @@ public class ModMain implements ModInitializer, ClientModInitializer, DedicatedS
 		String[] args = System.getProperty("sun.java.command").split(" ");
 		LOGGER.info("Invoking SpongeFabric Installer with args {}", (Object) args);
 
-		invokeMain("org.spongepowered.fabric.installer.InstallerMain", args);
+		invokeMain("org.spongepowered.fabric.applaunch.Main", args);
 	}
 
 	@Override

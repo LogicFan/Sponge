@@ -1,11 +1,7 @@
-import org.jetbrains.gradle.ext.TaskTriggersConfig
-import org.spongepowered.gradle.impl.OutputDependenciesToJson
-
 plugins {
 	id("fabric-loom")
 	id("com.github.johnrengelman.shadow")
 	id("implementation-structure")
-	id("templated-resources")
 	eclipse
 }
 
@@ -30,15 +26,10 @@ version = spongeImpl.generatePlatformBuildVersionString(apiVersion, minecraftVer
 
 // ==== Configurations ====
 // SpongeFabric specific configurations
-val fabricLibrariesConfig: NamedDomainObjectProvider<Configuration> = configurations.register("libraries")
 val fabricAppLaunchConfig: NamedDomainObjectProvider<Configuration> = configurations.register("applaunch") {
-	extendsFrom(fabricLibrariesConfig.get())
-	// add mod dependencies (i.e. fabric-loader)
 	extendsFrom(configurations.modImplementationMapped.get())
-	// add dependencies of fabric-loader
 	extendsFrom(configurations.named("loaderLibraries").get())
 }
-val fabricInstallerConfig: NamedDomainObjectProvider<Configuration> = configurations.register("installer")
 
 // SpongeCommon configurations
 val launchConfig: NamedDomainObjectProvider<Configuration> = commonProject.configurations.named("launch")
@@ -50,15 +41,11 @@ val main: NamedDomainObjectProvider<SourceSet> = commonProject.sourceSets.named(
 
 // ==== Source Sets ====
 // SpongeFabric source sets
-val fabricInstaller by sourceSets.register("installer")
 val fabricMain by sourceSets.named("main") {
 	// implementation (compile) dependencies
 	spongeImpl.applyNamedDependencyOnOutput(commonProject, accessors.get(), this, project, this.implementationConfigurationName)
 	spongeImpl.applyNamedDependencyOnOutput(commonProject, launch.get(), this, project, this.implementationConfigurationName)
 	spongeImpl.applyNamedDependencyOnOutput(commonProject, applaunch.get(), this, project, this.implementationConfigurationName)
-	configurations.named(implementationConfigurationName) {
-		extendsFrom(fabricLibrariesConfig.get())
-	}
 }
 val fabricLaunch by sourceSets.register("launch") {
 	// implementation (compile) dependencies
@@ -85,7 +72,6 @@ val fabricAppLaunch by sourceSets.register("applaunch") {
 	// implementation (compile) dependencies
 	spongeImpl.applyNamedDependencyOnOutput(commonProject, applaunch.get(), this, project, this.implementationConfigurationName)
 	spongeImpl.applyNamedDependencyOnOutput(commonProject, launch.get(), fabricLaunch, project, this.implementationConfigurationName)
-	spongeImpl.applyNamedDependencyOnOutput(project, fabricInstaller, this, project, this.implementationConfigurationName)
 	spongeImpl.applyNamedDependencyOnOutput(project, this, fabricLaunch, project, fabricLaunch.implementationConfigurationName)
 	// runtime dependencies - literally add the rest of the project, because we want to launch the game
 	spongeImpl.applyNamedDependencyOnOutput(project, fabricMixins, this, project, this.runtimeOnlyConfigurationName)
@@ -101,19 +87,11 @@ val fabricAppLaunch by sourceSets.register("applaunch") {
 val fabricMixinsImplementation by configurations.named(fabricMixins.implementationConfigurationName) {
 	extendsFrom(fabricAppLaunchConfig.get())
 }
-configurations.named(fabricInstaller.implementationConfigurationName) {
-	extendsFrom(fabricInstallerConfig.get())
-}
 configurations.named(fabricAppLaunch.implementationConfigurationName) {
 	extendsFrom(fabricAppLaunchConfig.get())
-	// remove this line, since minecraft itself is not needed
-	// extendsFrom(launchConfig.get())
 }
 val fabricAppLaunchRuntime by configurations.named(fabricAppLaunch.runtimeOnlyConfigurationName)
 val mixinConfigs: MutableSet<String> = spongeImpl.mixinConfigurations
-configurations.named(fabricInstaller.implementationConfigurationName) {
-	extendsFrom(fabricInstallerConfig.get())
-}
 
 // ==== Dependencies ====
 dependencies {
@@ -131,39 +109,36 @@ dependencies {
 	val asmVersion: String by project
 	val guavaVersion: String by project
 	val jlineVersion: String by project
-	// use Fabric's log4j version
-	val log4jVersion: String = "2.8.1"
+	val log4jVersion: String by project
 	val mixinVersion: String by project
 	val pluginSpiVersion: String by project
 	val timingsVersion: String by project
 
-	// SpongeFabric installer
-	val installer = fabricInstallerConfig.get().name
-	installer("com.google.code.gson:gson:2.8.0")
-	installer("org.spongepowered:configurate-hocon:4.1.1")
-	installer("org.spongepowered:configurate-core:4.1.1")
-	installer("net.sf.jopt-simple:jopt-simple:5.0.3")
-	installer("org.tinylog:tinylog-api:2.2.1")
-	installer("org.tinylog:tinylog-impl:2.2.1")
-	installer("org.ow2.asm:asm-commons:$asmVersion")
-	add(fabricInstaller.runtimeOnlyConfigurationName, "org.spongepowered:spongeapi:$apiVersion") {
-		// Add the API as a runtime dependency, just so it gets shaded into the jar
-		isTransitive = false
-	}
+//	installer("com.google.code.gson:gson:2.8.0")
+//	installer("org.spongepowered:configurate-hocon:4.1.1")
+//	installer("org.spongepowered:configurate-core:4.1.1")
+//	installer("net.sf.jopt-simple:jopt-simple:5.0.3")
+//	installer("org.tinylog:tinylog-api:2.2.1")
+//	installer("org.tinylog:tinylog-impl:2.2.1")
+//	installer("org.ow2.asm:asm-commons:$asmVersion")
+//	add(fabricInstaller.runtimeOnlyConfigurationName, "org.spongepowered:spongeapi:$apiVersion") {
+//		// Add the API as a runtime dependency, just so it gets shaded into the jar
+//		isTransitive = false
+//	}
 
 	// SpongeFabric applaunch
 	val appLaunch = fabricAppLaunchConfig.name
 	appLaunch("org.spongepowered:spongeapi:$apiVersion")
 	appLaunch(platform("net.kyori:adventure-bom:$apiAdventureVersion"))
 	appLaunch("net.kyori:adventure-serializer-configurate4")
-	// appLaunch("org.spongepowered:mixin:$mixinVersion")
-	// appLaunch("org.ow2.asm:asm-util:$asmVersion")
-	// appLaunch("org.ow2.asm:asm-tree:$asmVersion")
+	appLaunch("org.spongepowered:mixin:$mixinVersion")
+	appLaunch("org.ow2.asm:asm-util:$asmVersion")
+	appLaunch("org.ow2.asm:asm-tree:$asmVersion")
 	appLaunch("com.google.guava:guava:$guavaVersion")
 	appLaunch("org.spongepowered:plugin-spi:$pluginSpiVersion")
 	appLaunch("javax.inject:javax.inject:1")
-	// appLaunch("org.apache.logging.log4j:log4j-api:$log4jVersion")
-	// appLaunch("org.apache.logging.log4j:log4j-core:$log4jVersion")
+	appLaunch("org.apache.logging.log4j:log4j-api:$log4jVersion")
+	appLaunch("org.apache.logging.log4j:log4j-core:$log4jVersion")
 	appLaunch("com.lmax:disruptor:3.4.2")
 	appLaunch("com.zaxxer:HikariCP:2.6.3")
 	appLaunch("org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion")
@@ -180,13 +155,11 @@ dependencies {
 		exclude(group = "org.checkerframework", module = "checker-qual")
 	}
 
-	// SpongeFabric libraries
-	val libraries = fabricLibrariesConfig.name
-	libraries("net.minecrell:terminalconsoleappender:1.3.0-SNAPSHOT")
-	libraries("org.jline:jline-terminal:$jlineVersion")
-	libraries("org.jline:jline-reader:$jlineVersion")
-	libraries("org.jline:jline-terminal-jansi:$jlineVersion")
-	libraries("org.spongepowered:timings:$timingsVersion")
+//	libraries("net.minecrell:terminalconsoleappender:1.3.0-SNAPSHOT")
+//	libraries("org.jline:jline-terminal:$jlineVersion")
+//	libraries("org.jline:jline-reader:$jlineVersion")
+//	libraries("org.jline:jline-terminal-jansi:$jlineVersion")
+//	libraries("org.spongepowered:timings:$timingsVersion")
 
 	testplugins?.also {
 		fabricAppLaunchRuntime(project(it.path)) {
@@ -237,65 +210,74 @@ tasks {
 		archiveClassifier.set("dev")
 		manifest.from(fabricManifest)
 	}
-	val fabricInstallerJar by registering(Jar::class) {
-		archiveClassifier.set("installer-dev")
-		manifest{
-			from(fabricManifest)
+
+	register("123") {
+		doLast {
+			println("123123")
+			configurations.named("loaderLibraries").get().forEach {
+				println(it.name)
+			}
 		}
-		from(fabricInstaller.output)
-	}
-
-	// ==== Template Java Files ====
-	// copy and convert installer/templates/** into src
-	val installerTemplateSource = project.file("src/installer/templates")
-	val installerTemplateDest = project.layout.buildDirectory.dir("generated/sources/installerTemplates")
-	val generateInstallerTemplates by registering(Copy::class) {
-		group = "sponge"
-		description = "Generate classes from templates for the SpongeFabric installer"
-		val properties = mutableMapOf(
-				"minecraftVersion" to minecraftVersion
-		)
-		inputs.properties(properties)
-
-		// Copy template
-		from(installerTemplateSource)
-		into(installerTemplateDest)
-		expand(properties)
-	}
-	fabricInstaller.java.srcDir(generateInstallerTemplates.map { it.outputs })
-	// Generate templates on IDE import as well
-	(rootProject.idea.project as? ExtensionAware)?.also {
-		(it.extensions["settings"] as ExtensionAware).extensions.getByType(TaskTriggersConfig::class).afterSync(generateInstallerTemplates)
-	}
-	project.eclipse {
-		synchronizationTasks(generateInstallerTemplates)
-	}
-	// add generated file into source
-	val installerResources = project.layout.buildDirectory.dir("generated/resources/installer")
-	fabricInstaller.resources.srcDir(installerResources)
-
-	// ==== Generate libraries.json for installer ====
-	val downloadNotNeeded = configurations.register("downloadNotNeeded") {
-		extendsFrom(fabricInstallerConfig.get())
-		// exclude mod dependencies (i.e. fabric-loader)
-		extendsFrom(configurations.modImplementationMapped.get())
-		// exclude dependencies of fabric-loader
-		extendsFrom(configurations.named("loaderLibraries").get())
-	}
-	val emitDependencies by registering(OutputDependenciesToJson::class) {
-		group = "sponge"
-		this.dependencies(fabricAppLaunchConfig)
-		this.excludedDependencies(downloadNotNeeded)
-		outputFile.set(installerResources.map { it.file("libraries.json") })
-	}
-	named(fabricInstaller.processResourcesTaskName).configure {
-		dependsOn(emitDependencies)
 	}
 
 	shadowJar {
 		archiveClassifier.set("universal-dev")
 
-		configurations = listOf(project.configurations.getByName(fabricInstaller.runtimeClasspathConfigurationName))
+		dependencies {
+			//
+			exclude("ca.weblite:java-objc-bridge")
+			exclude("com.google.code.gson:gson")
+			exclude("com.google.guava:guava")
+			exclude("com.google.jimfs:jimfs")
+			exclude("com.ibm.icu:icu4j")
+			exclude("com.mojang:authlib")
+			exclude("com.mojang:brigadier")
+			exclude("com.mojang:datafixerupper")
+			exclude("com.mojang:javabridge")
+			exclude("com.mojang:patchy")
+			exclude("com.mojang:text2speech")
+			exclude("commons-codec:commons-codec")
+			exclude("commons-io:commons-io")
+			exclude("commons-logging:commons-logging")
+			exclude("io.netty:netty-all")
+			exclude("it.unimi.dsi:fastutil")
+			exclude("net.fabricmc:access-widener")
+			exclude("net.fabricmc:fabric-loader-sat4j")
+			exclude("net.fabricmc:sponge-mixin")
+			exclude("net.fabricmc:tiny-mappings-parser")
+			exclude("net.fabricmc:tiny-remapper")
+			exclude("net.java.dev.jna:jna")
+			exclude("net.java.dev.jna:platform")
+			exclude("net.java.jinput:jinput")
+			exclude("net.java.jutils:jutils")
+			exclude("net.sf.jopt-simple:jopt-simple")
+			exclude("org.apache.commons:commons-compress")
+			exclude("org.apache.commons:commons-lang3")
+			exclude("org.apache.httpcomponents:httpclient")
+			exclude("org.apache.httpcomponents:httpcore")
+			exclude("org.apache.logging.log4j:log4j-api")
+			exclude("org.apache.logging.log4j:log4j-core")
+			exclude("org.lwjgl:lwjgl-glfw")
+			exclude("org.lwjgl:lwjgl-glfw")
+			exclude("org.lwjgl:lwjgl-jemalloc")
+			exclude("org.lwjgl:lwjgl-jemalloc")
+			exclude("org.lwjgl:lwjgl-openal")
+			exclude("org.lwjgl:lwjgl-openal")
+			exclude("org.lwjgl:lwjgl-opengl")
+			exclude("org.lwjgl:lwjgl-opengl")
+			exclude("org.lwjgl:lwjgl-stb")
+			exclude("org.lwjgl:lwjgl-stb")
+			exclude("org.lwjgl:lwjgl-tinyfd")
+			exclude("org.lwjgl:lwjgl-tinyfd")
+			exclude("org.lwjgl:lwjgl")
+			exclude("org.lwjgl:lwjgl")
+			exclude("org.ow2.asm:asm-analysis")
+			exclude("org.ow2.asm:asm-commons")
+			exclude("org.ow2.asm:asm-tree")
+			exclude("org.ow2.asm:asm-util")
+			exclude("org.ow2.asm:asm")
+			exclude("oshi-project:oshi-core")
+		}
 
 		manifest {
 			attributes(mapOf(
@@ -313,7 +295,6 @@ tasks {
 		from(commonProject.sourceSets.named("launch").map { it.output })
 		from(commonProject.sourceSets.named("applaunch").map { it.output })
 		from(sourceSets.main.map { it.output })
-		from(fabricInstaller.output)
 		from(fabricAppLaunch.output)
 		from(fabricLaunch.output)
 
@@ -343,7 +324,6 @@ license {
 
 val shadowJar by tasks.existing
 val remapJar by tasks.existing
-val fabricInstallerJar by tasks.existing
 //val vanillaAppLaunchJar by tasks.existing
 //val vanillaLaunchJar by tasks.existing
 //val vanillaMixinsJar by tasks.existing
@@ -354,7 +334,6 @@ publishing {
 		register("sponge", MavenPublication::class) {
 			artifact(shadowJar.get());
 			artifact(remapJar.get())
-			artifact(fabricInstallerJar.get())
 //			artifact(vanillaAppLaunchJar.get())
 //			artifact(vanillaLaunchJar.get())
 //			artifact(vanillaMixinsJar.get())
