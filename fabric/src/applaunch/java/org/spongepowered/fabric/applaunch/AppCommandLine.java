@@ -29,7 +29,6 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.util.PathConverter;
 import joptsimple.util.PathProperties;
-import org.spongepowered.fabric.installer.Constants;
 
 import java.io.InputStream;
 import java.nio.file.FileSystem;
@@ -51,6 +50,11 @@ public final class AppCommandLine {
     public static AppLaunchTargets launchTarget;
     public static Path gameDirectory;
 
+    public static final class ManifestAttributes {
+        public static final String ACCESS_WIDENER = "Access-Widener";
+        public static final String LAUNCH_TARGET = "Launch-Target";
+    }
+
     public static void configure(String[] args) throws Exception {
         AppCommandLine.PARSER.allowsUnrecognizedOptions();
 
@@ -69,7 +73,7 @@ public final class AppCommandLine {
                 // Try the manifest before we give up
                 try (final InputStream stream = Files.newInputStream(manifestFile)) {
                     final Manifest manifest = new Manifest(stream);
-                    launchTarget = manifest.getMainAttributes().getValue(Constants.ManifestAttributes.LAUNCH_TARGET);
+                    launchTarget = manifest.getMainAttributes().getValue(ManifestAttributes.LAUNCH_TARGET);
                     manifestTarget = true;
                 }
             }

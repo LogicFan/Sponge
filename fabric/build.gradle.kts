@@ -131,14 +131,8 @@ dependencies {
 	appLaunch("org.spongepowered:spongeapi:$apiVersion")
 	appLaunch(platform("net.kyori:adventure-bom:$apiAdventureVersion"))
 	appLaunch("net.kyori:adventure-serializer-configurate4")
-	appLaunch("org.spongepowered:mixin:$mixinVersion")
-	appLaunch("org.ow2.asm:asm-util:$asmVersion")
-	appLaunch("org.ow2.asm:asm-tree:$asmVersion")
-	appLaunch("com.google.guava:guava:$guavaVersion")
 	appLaunch("org.spongepowered:plugin-spi:$pluginSpiVersion")
 	appLaunch("javax.inject:javax.inject:1")
-	appLaunch("org.apache.logging.log4j:log4j-api:$log4jVersion")
-	appLaunch("org.apache.logging.log4j:log4j-core:$log4jVersion")
 	appLaunch("com.lmax:disruptor:3.4.2")
 	appLaunch("com.zaxxer:HikariCP:2.6.3")
 	appLaunch("org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion")
@@ -154,12 +148,11 @@ dependencies {
 		exclude(group = "org.spongepowered", module = "configurate-core")
 		exclude(group = "org.checkerframework", module = "checker-qual")
 	}
-
-//	libraries("net.minecrell:terminalconsoleappender:1.3.0-SNAPSHOT")
-//	libraries("org.jline:jline-terminal:$jlineVersion")
-//	libraries("org.jline:jline-reader:$jlineVersion")
-//	libraries("org.jline:jline-terminal-jansi:$jlineVersion")
-//	libraries("org.spongepowered:timings:$timingsVersion")
+	appLaunch("net.minecrell:terminalconsoleappender:1.3.0-SNAPSHOT")
+	appLaunch("org.jline:jline-terminal:$jlineVersion")
+	appLaunch("org.jline:jline-reader:$jlineVersion")
+	appLaunch("org.jline:jline-terminal-jansi:$jlineVersion")
+	appLaunch("org.spongepowered:timings:$timingsVersion")
 
 	testplugins?.also {
 		fabricAppLaunchRuntime(project(it.path)) {
@@ -211,20 +204,17 @@ tasks {
 		manifest.from(fabricManifest)
 	}
 
-	// this is how to get loaderLibraries
-	register("123") {
-		doLast {
-			println("123123")
-			configurations.named("loaderLibraries").get().allDependencies.forEach {
-				println(it.name)
-			}
-		}
-	}
+	val loaderLibraries by configurations.existing;
 
 	shadowJar {
 		archiveClassifier.set("universal-dev")
 
 		dependencies {
+			loaderLibraries.get().allDependencies.forEach {
+				val id = it.group + ":" + it.name;
+				println("Exclude $id from shadowJar.")
+				exclude(dependency(id));
+			}
 		}
 
 		manifest {
