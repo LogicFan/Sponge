@@ -21,7 +21,8 @@ val testplugins: Project? = rootProject.subprojects.find { "testplugins" == it.n
 
 // Fabric variables
 val name : String by project
-val loaderVersion : String by project
+// val loaderVersion : String by project
+val loaderVersion = "0.11.6+local"
 val modVersion : String by project
 
 // project variables
@@ -139,6 +140,7 @@ dependencies {
 
 	// SpongeFabric installer
 	val installer = fabricInstallerConfig.get().name
+	installer("net.fabricmc:fabric-loader:$loaderVersion")
 	installer("com.google.code.gson:gson:2.8.0")
 	installer("org.spongepowered:configurate-hocon:4.1.1")
 	installer("org.spongepowered:configurate-core:4.1.1")
@@ -296,6 +298,11 @@ tasks {
 		archiveClassifier.set("universal-dev")
 
 		configurations = listOf(project.configurations.getByName(fabricInstaller.runtimeClasspathConfigurationName))
+
+		dependencies {
+			// do not shade fabric-loader
+			exclude(dependency("net.fabricmc:fabric-loader"))
+		}
 
 		manifest {
 			attributes(mapOf(

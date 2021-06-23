@@ -19,6 +19,7 @@
 
   "environment": "*",
   "entrypoints": {
+    "preInit":   ["org.spongepowered.fabric.ModMain"],
     "preLaunch": ["org.spongepowered.fabric.ModMain"],
     "main":      ["org.spongepowered.fabric.ModMain"],
     "client":    ["org.spongepowered.fabric.ModMain"],

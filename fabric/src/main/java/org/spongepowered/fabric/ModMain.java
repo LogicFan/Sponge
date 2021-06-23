@@ -28,24 +28,31 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.api.ModInitializer;
 
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.entrypoint.PreInitEntrypoint;
 import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
-import net.minecraft.server.Main;
+import net.fabricmc.loader.impl.launch.FabricLauncherBase;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.spongepowered.common.applaunch.plugin.PluginEngine;
-import org.spongepowered.fabric.launch.ClientLaunch;
 
 import java.lang.reflect.InvocationTargetException;
 
-public class ModMain implements ModInitializer, ClientModInitializer, DedicatedServerModInitializer, PreLaunchEntrypoint {
+public class ModMain implements ModInitializer,
+		ClientModInitializer, DedicatedServerModInitializer,
+		PreLaunchEntrypoint, PreInitEntrypoint {
 	private static final Logger LOGGER = LogManager.getLogger(ModMain.class);
 
 	@Override
-	public void onPreLaunch() {
-		String[] args = System.getProperty("sun.java.command").split(" ");
+	public void onPreInit() {
+		String[] args = FabricLoader.getInstance().getLaunchArguments(false);
 		LOGGER.info("Invoking SpongeFabric Installer with args {}", (Object) args);
 
 		invokeMain("org.spongepowered.fabric.installer.InstallerMain", args);
+	}
+
+	@Override
+	public void onPreLaunch() {
+		System.out.println("onPreLaunch");
 	}
 
 	@Override

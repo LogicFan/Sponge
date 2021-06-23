@@ -9,7 +9,6 @@ pluginManagement {
             name = "Fabric"
         }
         gradlePluginPortal()
-        mavenLocal()
     }
 
     plugins {
@@ -36,6 +35,7 @@ dependencyResolutionManagement {
         maven("https://repo.spongepowered.org/repository/maven-public/") {
             name = "sponge"
         }
+        mavenLocal()
     }
 }
 

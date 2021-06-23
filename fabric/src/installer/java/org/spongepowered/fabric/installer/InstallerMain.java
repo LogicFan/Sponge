@@ -24,9 +24,11 @@
  */
 package org.spongepowered.fabric.installer;
 
+import net.fabricmc.loader.impl.launch.FabricLauncherBase;
 import org.tinylog.Logger;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -70,7 +72,11 @@ public final class InstallerMain {
             .map(LibraryManager.Library::getFile)
             .forEach(path -> {
                 Logger.debug("Adding jar {} to classpath", path);
-                KnotClassLoaderUtils.addJarToClasspath(path);
+                try {
+                    FabricLauncherBase.getLauncher().propose(path.toUri().toURL());
+                } catch (MalformedURLException e) {
+                    Logger.error(e, "Error on adding jar {} to classpath", path.toUri());
+                }
             });
 
         final List<String> gameArgs = new ArrayList<>(LauncherCommandLine.remainingArgs);
