@@ -9,6 +9,7 @@ pluginManagement {
             name = "Fabric"
         }
         gradlePluginPortal()
+        mavenLocal()
     }
 
     plugins {
@@ -20,7 +21,7 @@ pluginManagement {
         id("implementation-structure")
         id("org.jetbrains.gradle.plugin.idea-ext") version "1.0"
         id("com.github.ben-manes.versions") version "0.39.0"
-        id("fabric-loom") version "0.9-SNAPSHOT"
+        id("fabric-loom") version "0.9.local"
     }
 }
 
@@ -53,8 +54,8 @@ includeBuild("SpongeAPI") {
         substitute(module("org.spongepowered:spongeapi")).with(project(":"))
     }
 }
-include(":SpongeVanilla")
-project(":SpongeVanilla").projectDir = file("vanilla")
+//include(":SpongeVanilla")
+//project(":SpongeVanilla").projectDir = file("vanilla")
 include("generator")
 
 include(":SpongeFabric")
