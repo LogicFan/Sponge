@@ -107,8 +107,6 @@ configurations.named(fabricInstaller.implementationConfigurationName) {
 }
 configurations.named(fabricAppLaunch.implementationConfigurationName) {
 	extendsFrom(fabricAppLaunchConfig.get())
-	// remove this line, since minecraft itself is not needed
-	// extendsFrom(launchConfig.get())
 }
 val fabricAppLaunchRuntime by configurations.named(fabricAppLaunch.runtimeOnlyConfigurationName)
 val mixinConfigs: MutableSet<String> = spongeImpl.mixinConfigurations
@@ -120,7 +118,7 @@ configurations.named(fabricInstaller.implementationConfigurationName) {
 dependencies {
 	// Fabric dependencies
 	minecraft("com.mojang:minecraft:$minecraftVersion")
-	mappings(minecraft.officialMojangMappings())
+	mappings(loom.officialMojangMappings())
 	modImplementation("net.fabricmc:fabric-loader:$loaderVersion")
 
 	// Sponge dependencies
