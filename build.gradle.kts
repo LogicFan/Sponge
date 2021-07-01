@@ -161,10 +161,10 @@ dependencies {
     implementation(platform("net.kyori:adventure-bom:$apiAdventureVersion"))
     implementation("net.kyori:adventure-serializer-configurate4")
 
-    // For SpongeFabirc
-    val mixinsAnnotationProcessor by configurations.named("mixinsAnnotationProcessor")
-    mixinsAnnotationProcessor("org.spongepowered:mixin:0.8.2:processor")
-    mixinsAnnotationProcessor("net.fabricmc:fabric-mixin-compile-extensions:0.4.4")
+    if (findProject(":SpongeFabric") != null) {
+//        val mixinsAp = mixins.get().annotationProcessorConfigurationName;
+//        mixinsAp("net.fabricmc:fabric-mixin-compile-extensions:0.4.4")
+    }
 
     // Launch Dependencies - Needed to bootstrap the engine(s)
     launchConfig("org.spongepowered:spongeapi:$apiVersion")
@@ -284,14 +284,15 @@ allprojects {
     val spongeSnapshotRepo: String? by project
     val spongeReleaseRepo: String? by project
     tasks {
-        // val emptyAnnotationProcessors = objects.fileCollection()
         withType(JavaCompile::class).configureEach {
             options.compilerArgs.addAll(listOf("-Xmaxerrs", "1000"))
             options.encoding = "UTF-8"
             if (JavaVersion.current().isJava10Compatible) {
                 options.release.set(8)
             }
-            // options.annotationProcessorPath = emptyAnnotationProcessors // hack so IntelliJ doesn't try to run Mixin AP
+            if (findProject(":SpongeVanilla") != null) {
+                options.annotationProcessorPath = objects.fileCollection() // hack so Intellij doesn't try to run Mixin AP
+            }
         }
 
         withType(PublishToMavenRepository::class).configureEach {
