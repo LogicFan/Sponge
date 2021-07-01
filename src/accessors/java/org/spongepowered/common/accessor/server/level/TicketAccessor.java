@@ -22,31 +22,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.event;
+package org.spongepowered.common.accessor.server.level;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import net.minecraft.server.level.Ticket;
+import net.minecraft.server.level.TicketType;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Accessor;
+import org.spongepowered.asm.mixin.gen.Invoker;
+import org.spongepowered.common.UntransformedInvokerError;
 
-import org.spongepowered.api.event.Event;
+@Mixin(Ticket.class)
+public interface TicketAccessor<T> {
 
-import java.lang.reflect.Method;
-
-public abstract class AnnotatedEventListener implements SpongeEventListener<Event> {
-
-    protected final Object handle;
-
-    protected AnnotatedEventListener(Object handle) {
-        this.handle = checkNotNull(handle, "handle");
+    @Invoker("<init>")
+    static <T> Ticket<T> accessor$createInstance(final TicketType<T> ticketType, final int ticketLevel, final T key) {
+        throw new UntransformedInvokerError();
     }
 
-    @Override
-    public final Object getHandle() {
-        return this.handle;
-    }
+    @Accessor("createdTick") long accessor$createdTick();
 
-    interface Factory {
+    @Accessor("key") T accessor$key();
 
-        AnnotatedEventListener create(Object handle, Method method) throws Exception;
+    @Invoker("timedOut") boolean invoker$timedOut(long currentTimestamp);
 
-    }
+    @Invoker("setCreatedTick") void invoker$setCreatedTick(long timestamp);
 
 }

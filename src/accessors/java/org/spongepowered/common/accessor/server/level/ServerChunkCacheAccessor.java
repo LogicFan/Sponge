@@ -22,11 +22,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.applaunch.plugin;
+package org.spongepowered.common.accessor.server.level;
 
-import org.spongepowered.plugin.PluginEnvironment;
+import net.minecraft.server.level.DistanceManager;
+import net.minecraft.server.level.ServerChunkCache;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Accessor;
 
-public interface PluginEngine {
+@Mixin(ServerChunkCache.class)
+public interface ServerChunkCacheAccessor {
 
-    PluginEnvironment getPluginEnvironment();
+    @Accessor("generator") void accessor$generator(final ChunkGenerator generator);
+
+    @Accessor("distanceManager") DistanceManager accessor$distanceManager();
+
 }

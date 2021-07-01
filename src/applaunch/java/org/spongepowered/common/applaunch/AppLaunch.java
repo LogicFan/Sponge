@@ -22,26 +22,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.registry;
+package org.spongepowered.common.applaunch;
 
-import com.google.inject.Singleton;
-import net.minecraft.server.MinecraftServer;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.adventure.AdventureRegistry;
-import org.spongepowered.api.item.recipe.RecipeRegistry;
-import org.spongepowered.api.registry.GameRegistry;
-import org.spongepowered.common.adventure.AdventureRegistryImpl;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.spongepowered.common.applaunch.plugin.PluginPlatform;
 
-@Singleton
-public final class SpongeGameRegistry implements GameRegistry {
+public final class AppLaunch {
 
-    @Override
-    public AdventureRegistry adventureRegistry() {
-        return AdventureRegistryImpl.INSTANCE;
+    private static final Logger LOGGER = LogManager.getLogger("app launch");
+    private static PluginPlatform pluginPlatform;
+
+    public static Logger logger() {
+        return AppLaunch.LOGGER;
     }
 
-    @Override
-    public RecipeRegistry recipeRegistry() {
-        return ((RecipeRegistry) ((MinecraftServer) Sponge.server()).getRecipeManager());
+    public static <P extends PluginPlatform> P setPluginPlatform(final PluginPlatform pluginPlatform) {
+        if (AppLaunch.pluginPlatform != null) {
+            throw new RuntimeException("The plugin platform cannot be set twice! (Same classloader ?)");
+        }
+        AppLaunch.pluginPlatform = pluginPlatform;
+        return (P) pluginPlatform;
+    }
+
+    public static <P extends PluginPlatform> P pluginPlatform() {
+        return (P) AppLaunch.pluginPlatform;
     }
 }

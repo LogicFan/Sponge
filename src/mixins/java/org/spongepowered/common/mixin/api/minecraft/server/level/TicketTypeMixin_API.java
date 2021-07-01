@@ -22,24 +22,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.mixin.core.brigadier.exceptions;
+package org.spongepowered.common.mixin.api.minecraft.server.level;
 
-import com.mojang.brigadier.Message;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.util.ComponentMessageThrowable;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.spongepowered.api.util.Ticks;
+import org.spongepowered.api.world.server.TicketType;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.common.adventure.SpongeAdventure;
 
-@Mixin(CommandSyntaxException.class)
-public abstract class CommandSyntaxExceptionMixin implements ComponentMessageThrowable {
+@Mixin(net.minecraft.server.level.TicketType.class)
+public abstract class TicketTypeMixin_API<T> implements TicketType<T> {
+
     // @formatter:off
-    @Shadow public abstract Message getRawMessage();
+    @Shadow @Final private long timeout;
     // @formatter:on
 
     @Override
-    public Component componentMessage() {
-        return SpongeAdventure.asAdventure(this.getRawMessage());
+    @NonNull
+    public Ticks lifetime() {
+        return Ticks.of(this.timeout);
     }
+
 }
