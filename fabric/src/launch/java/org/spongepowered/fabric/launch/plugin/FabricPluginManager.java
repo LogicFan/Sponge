@@ -35,7 +35,7 @@ import org.spongepowered.plugin.PluginContainer;
 import org.spongepowered.plugin.PluginLanguageService;
 import org.spongepowered.plugin.PluginLoader;
 import org.spongepowered.plugin.PluginResource;
-import org.spongepowered.fabric.applaunch.plugin.FabricPluginEngine;
+import org.spongepowered.fabric.applaunch.plugin.FabricPluginPlatform;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -105,7 +105,7 @@ public final class FabricPluginManager implements SpongePluginManager {
     }
 
     @SuppressWarnings("unchecked")
-    public void loadPlugins(final FabricPluginEngine engine) {
+    public void loadPlugins(final FabricPluginPlatform engine) {
         for (final Map.Entry<PluginLanguageService<PluginResource>, List<PluginCandidate<PluginResource>>> languageCandidates : engine.getCandidates().entrySet()) {
             final PluginLanguageService<PluginResource> languageService = languageCandidates.getKey();
             final Collection<PluginCandidate<PluginResource>> candidates = languageCandidates.getValue();
@@ -128,13 +128,13 @@ public final class FabricPluginManager implements SpongePluginManager {
 
                 plugin = pluginLoader.createPluginContainer(candidate, engine.getPluginEnvironment()).orElse(null);
                 if (plugin == null) {
-                    engine.getPluginEnvironment().logger().debug("Language service '{}' returned a null plugin container for '{}'.",
+                    engine.logger().debug("Language service '{}' returned a null plugin container for '{}'.",
                             languageService.name(), candidate.metadata().id());
                     continue;
                 }
 
                 try {
-                    pluginLoader.loadPlugin(engine.getPluginEnvironment(), plugin, FabricLaunch.getInstance().getClass().getClassLoader());
+                    pluginLoader.loadPlugin(engine.getPluginEnvironment(), plugin, FabricLaunch.instance().getClass().getClassLoader());
                     this.addPlugin(plugin);
                 } catch (final InvalidPluginException e) {
                     e.printStackTrace();
@@ -142,7 +142,7 @@ public final class FabricPluginManager implements SpongePluginManager {
             }
         }
 
-        engine.getPluginEnvironment().logger().info("Loaded plugin(s): {}",
+        engine.logger().info("Loaded plugin(s): {}",
                 this.sortedPlugins.stream().map(p -> p.metadata().id()).collect(Collectors.toList()));
     }
 }

@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 import org.jetbrains.gradle.ext.TaskTriggersConfig
 import org.spongepowered.gradle.impl.OutputDependenciesToJson
 
@@ -130,9 +132,8 @@ dependencies {
 	val asmVersion: String by project
 	val guavaVersion: String by project
 	val jlineVersion: String by project
-	// use Fabric's log4j version
-	val log4jVersion: String = "2.8.1"
-	val mixinVersion: String by project
+	val log4jVersion = "2.8.1" // algin which what minecraft provided
+	// mixinVersion: fabric provides mixin, use whatever they have
 	val pluginSpiVersion: String by project
 	val timingsVersion: String by project
 
@@ -236,13 +237,6 @@ tasks {
 	jar {
 		archiveClassifier.set("dev")
 		manifest.from(fabricManifest)
-	}
-	val fabricInstallerJar by registering(Jar::class) {
-		archiveClassifier.set("installer-dev")
-		manifest{
-			from(fabricManifest)
-		}
-		from(fabricInstaller.output)
 	}
 
 	// ==== Template Java Files ====
@@ -348,7 +342,6 @@ license {
 
 val shadowJar by tasks.existing
 val remapJar by tasks.existing
-val fabricInstallerJar by tasks.existing
 //val vanillaAppLaunchJar by tasks.existing
 //val vanillaLaunchJar by tasks.existing
 //val vanillaMixinsJar by tasks.existing
@@ -359,7 +352,6 @@ publishing {
 		register("sponge", MavenPublication::class) {
 			artifact(shadowJar.get());
 			artifact(remapJar.get())
-			artifact(fabricInstallerJar.get())
 //			artifact(vanillaAppLaunchJar.get())
 //			artifact(vanillaLaunchJar.get())
 //			artifact(vanillaMixinsJar.get())

@@ -33,7 +33,7 @@ import org.spongepowered.plugin.PluginKeys;
 import org.spongepowered.plugin.jvm.locator.JVMPluginResourceLocatorService;
 import org.spongepowered.plugin.metadata.PluginMetadata;
 import org.spongepowered.plugin.metadata.util.PluginMetadataHelper;
-import org.spongepowered.fabric.applaunch.plugin.FabricPluginEngine;
+import org.spongepowered.fabric.applaunch.plugin.FabricPluginPlatform;
 import org.spongepowered.fabric.launch.plugin.FabricPluginManager;
 
 import java.io.IOException;
@@ -50,7 +50,7 @@ public abstract class FabricLaunch extends Launch {
     private final Stage injectionStage;
     private PluginContainer fabricPlugin;
 
-    protected FabricLaunch(final FabricPluginEngine pluginEngine, final Stage injectionStage) {
+    protected FabricLaunch(final FabricPluginPlatform pluginEngine, final Stage injectionStage) {
         super(pluginEngine, new FabricPluginManager());
         this.injectionStage = injectionStage;
     }
@@ -138,8 +138,8 @@ public abstract class FabricLaunch extends Launch {
     }
 
     @Override
-    public FabricPluginEngine getPluginEngine() {
-        return (FabricPluginEngine) this.pluginEngine;
+    public FabricPluginPlatform getPluginEngine() {
+        return (FabricPluginPlatform) this.pluginEngine;
     }
 
     @Override

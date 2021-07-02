@@ -27,15 +27,15 @@ package org.spongepowered.fabric.launch;
 import com.google.inject.Stage;
 import org.spongepowered.common.SpongeBootstrap;
 import org.spongepowered.common.launch.Launch;
-import org.spongepowered.fabric.applaunch.plugin.FabricPluginEngine;
+import org.spongepowered.fabric.applaunch.plugin.FabricPluginPlatform;
 
 public final class ClientLaunch extends FabricLaunch {
 
-    protected ClientLaunch(final FabricPluginEngine pluginEngine, final Stage injectionStage) {
+    protected ClientLaunch(final FabricPluginPlatform pluginEngine, final Stage injectionStage) {
         super(pluginEngine, injectionStage);
     }
 
-    public static void launch(final FabricPluginEngine pluginEngine, final Boolean isDeveloperEnvironment, final String[] args) {
+    public static void launch(final FabricPluginPlatform pluginEngine, final Boolean isDeveloperEnvironment, final String[] args) {
         final ClientLaunch launcher = new ClientLaunch(pluginEngine, isDeveloperEnvironment ? Stage.DEVELOPMENT : Stage.PRODUCTION);
         Launch.setInstance(launcher);
         launcher.launchPlatform(args);

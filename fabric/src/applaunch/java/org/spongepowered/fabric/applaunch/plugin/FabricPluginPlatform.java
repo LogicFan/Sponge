@@ -24,7 +24,8 @@
  */
 package org.spongepowered.fabric.applaunch.plugin;
 
-import org.spongepowered.common.applaunch.plugin.PluginEngine;
+import org.apache.logging.log4j.Logger;
+import org.spongepowered.common.applaunch.plugin.PluginPlatform;
 import org.spongepowered.plugin.PluginCandidate;
 import org.spongepowered.plugin.PluginEnvironment;
 import org.spongepowered.plugin.PluginKeys;
@@ -32,27 +33,20 @@ import org.spongepowered.plugin.PluginLanguageService;
 import org.spongepowered.plugin.PluginResource;
 import org.spongepowered.plugin.PluginResourceLocatorService;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.ServiceConfigurationError;
-import java.util.ServiceLoader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
-public class FabricPluginEngine implements PluginEngine {
+public class FabricPluginPlatform implements PluginPlatform {
 
 	private final PluginEnvironment pluginEnvironment;
 	private final Map<String, PluginResourceLocatorService<PluginResource>> locatorServices;
 	private final Map<String, PluginLanguageService<PluginResource>> languageServices;
 
-	private final Map<String, List<PluginResource>> locatorResources;
+	private final Map<String, Set<PluginResource>> locatorResources;
 	private final Map<PluginLanguageService<PluginResource>, List<PluginCandidate<PluginResource>>> pluginCandidates;
 
-	public FabricPluginEngine(PluginEnvironment pluginEnvironment) {
+	public FabricPluginPlatform(PluginEnvironment pluginEnvironment) {
 		this.pluginEnvironment = pluginEnvironment;
 		this.locatorServices = new HashMap<>();
 		this.languageServices = new HashMap<>();
@@ -61,8 +55,44 @@ public class FabricPluginEngine implements PluginEngine {
 	}
 
 	@Override
+	public String version() {
+		return this.pluginEnvironment.blackboard().get(PluginKeys.VERSION).orElse("dev");
+	}
+
+	@Override
+	public void setVersion(String version) {
+		this.pluginEnvironment.blackboard().getOrCreate(PluginKeys.VERSION, () -> version);
+	}
+
+	@Override
+	public Logger logger() {
+		return this.pluginEnvironment.logger();
+	}
+
+	@Override
+	public Path baseDirectory() {
+		// TODO: change orElse part
+		return this.pluginEnvironment.blackboard().get(PluginKeys.BASE_DIRECTORY).orElse(Paths.get("."));
+	}
+
+	@Override
+	public void setBaseDirectory(Path baseDirectory) {
+		this.pluginEnvironment.blackboard().getOrCreate(PluginKeys.BASE_DIRECTORY, () -> baseDirectory);
+	}
+
+	@Override
+	public List<Path> pluginDirectories() {
+		return this.pluginEnvironment.blackboard().get(PluginKeys.PLUGIN_DIRECTORIES).orElseThrow(() -> new IllegalStateException("No plugin "
+				+ "directories have been specified!"));
+	}
+
+	@Override
+	public void setPluginDirectories(List<Path> pluginDirectories) {
+		this.pluginEnvironment.blackboard().getOrCreate(PluginKeys.PLUGIN_DIRECTORIES, () -> pluginDirectories);
+	}
+
 	public PluginEnvironment getPluginEnvironment() {
-		return pluginEnvironment;
+		return this.pluginEnvironment;
 	}
 
 	public Map<String, PluginResourceLocatorService<PluginResource>> getLocatorServices() {
@@ -73,7 +103,7 @@ public class FabricPluginEngine implements PluginEngine {
 		return Collections.unmodifiableMap(this.languageServices);
 	}
 
-	public Map<String, List<PluginResource>> getResources() {
+	public Map<String, Set<PluginResource>> getResources() {
 		return Collections.unmodifiableMap(this.locatorResources);
 	}
 
@@ -81,43 +111,16 @@ public class FabricPluginEngine implements PluginEngine {
 		return this.pluginCandidates;
 	}
 
-	public void configure() {
-		this.pluginEnvironment.logger().info("SpongePowered PLUGIN Subsystem Version={} Source={}",
-				this.pluginSubsystemVersion(), this.codeSource());
-
-		this.discoverLocatorServices();
-		this.getLocatorServices().forEach((k, v) -> this.pluginEnvironment
-				.logger().info("Plugin resource locator '{}' found.", k));
-		this.discoverLanguageServices();
-		this.getLanguageServices().forEach((k, v) -> this.pluginEnvironment
-				.logger().info("Plugin language loader '{}' found.", k));
-
+	private void initialize() {
 		for (final Map.Entry<String, PluginLanguageService<PluginResource>> entry : this.languageServices.entrySet()) {
 			entry.getValue().initialize(this.pluginEnvironment);
 		}
-
-		this.locatePluginResources();
-		this.createPluginCandidates();
-
-		// TODO: process plugins
 	}
 
-	String pluginSubsystemVersion() {
-		return this.pluginEnvironment.blackboard().get(PluginKeys.VERSION).orElse("Unknown");
-	}
-
-	String codeSource() {
-		try {
-			return this.getClass().getProtectionDomain().getCodeSource().getLocation().toString();
-		} catch (final Throwable th) {
-			return "Unknown";
-		}
-	}
-
-	void discoverLocatorServices() {
+	private void discoverLocatorServices() {
 		@SuppressWarnings("unchecked")
 		final ServiceLoader<PluginResourceLocatorService<PluginResource>> serviceLoader = (ServiceLoader<PluginResourceLocatorService<PluginResource>>) (Object) ServiceLoader.load(
-				PluginResourceLocatorService.class, FabricPluginEngine.class.getClassLoader());
+				PluginResourceLocatorService.class, FabricPluginPlatform.class.getClassLoader());
 
 		for (final Iterator<PluginResourceLocatorService<PluginResource>> it = serviceLoader.iterator(); it.hasNext(); ) {
 			final PluginResourceLocatorService<PluginResource> next;
@@ -133,10 +136,10 @@ public class FabricPluginEngine implements PluginEngine {
 		}
 	}
 
-	void discoverLanguageServices() {
+	private void discoverLanguageServices() {
 		@SuppressWarnings("unchecked")
 		final ServiceLoader<PluginLanguageService<PluginResource>> serviceLoader = (ServiceLoader<PluginLanguageService<PluginResource>>) (Object) ServiceLoader.load(
-				PluginLanguageService.class, FabricPluginEngine.class.getClassLoader());
+				PluginLanguageService.class, FabricPluginPlatform.class.getClassLoader());
 
 		for (final Iterator<PluginLanguageService<PluginResource>> it = serviceLoader.iterator(); it.hasNext(); ) {
 			final PluginLanguageService<PluginResource> next;
@@ -152,20 +155,20 @@ public class FabricPluginEngine implements PluginEngine {
 		}
 	}
 
-	void locatePluginResources() {
+	private void locatePluginResources() {
 		for (final Map.Entry<String, PluginResourceLocatorService<PluginResource>> locatorEntry : this.locatorServices.entrySet()) {
 			final PluginResourceLocatorService<PluginResource> locatorService = locatorEntry.getValue();
-			final List<PluginResource> resources = locatorService.locatePluginResources(this.pluginEnvironment);
+			final Set<PluginResource> resources = locatorService.locatePluginResources(this.pluginEnvironment);
 			if (!resources.isEmpty()) {
 				this.locatorResources.put(locatorEntry.getKey(), resources);
 			}
 		}
 	}
 
-	void createPluginCandidates() {
+	private void createPluginCandidates() {
 		for (final Map.Entry<String, PluginLanguageService<PluginResource>> languageEntry : this.languageServices.entrySet()) {
 			final PluginLanguageService<PluginResource> languageService = languageEntry.getValue();
-			for (final Map.Entry<String, List<PluginResource>> resourcesEntry : this.locatorResources.entrySet()) {
+			for (final Map.Entry<String, Set<PluginResource>> resourcesEntry : this.locatorResources.entrySet()) {
 
 				for (final PluginResource pluginResource : resourcesEntry.getValue()) {
 					try {
@@ -181,5 +184,32 @@ public class FabricPluginEngine implements PluginEngine {
 				}
 			}
 		}
+	}
+
+	private String codeSource() {
+		try {
+			return this.getClass().getProtectionDomain().getCodeSource().getLocation().toString();
+		} catch (final Throwable th) {
+			return "Unknown";
+		}
+	}
+
+	public void configure() {
+		this.logger().info("SpongePowered PLUGIN Subsystem Version={} Source={}",
+				this.version(), this.codeSource());
+
+		this.discoverLocatorServices();
+		this.getLocatorServices().forEach((k, v) -> this.pluginEnvironment
+				.logger().info("Plugin resource locator '{}' found.", k));
+		this.discoverLanguageServices();
+		this.getLanguageServices().forEach((k, v) -> this.pluginEnvironment
+				.logger().info("Plugin language loader '{}' found.", k));
+
+		this.initialize();
+
+		this.locatePluginResources();
+		this.createPluginCandidates();
+
+		// TODO: process plugins
 	}
 }

@@ -24,10 +24,11 @@
  */
 package org.spongepowered.fabric.applaunch.handler;
 
+import org.spongepowered.common.applaunch.AppLaunch;
 import org.spongepowered.fabric.applaunch.AppCommandLine;
 import org.spongepowered.fabric.applaunch.AppLaunchTargets;
 import org.spongepowered.fabric.applaunch.Main;
-import org.spongepowered.fabric.applaunch.plugin.FabricPluginEngine;
+import org.spongepowered.fabric.applaunch.plugin.FabricPluginPlatform;
 
 public class ServerLaunchHandler {
 	public static void main(final String[] args) throws Exception {
@@ -35,8 +36,8 @@ public class ServerLaunchHandler {
 			Boolean dev = AppCommandLine.launchTarget.equals(AppLaunchTargets.SERVER_DEVELOPMENT);
 
 			Class.forName("org.spongepowered.fabric.launch.DedicatedServerLaunch")
-					.getMethod("launch", FabricPluginEngine.class, Boolean.class, String[].class)
-					.invoke(null, Main.getInstance().getPluginEngine(), dev, args);
+					.getMethod("launch", FabricPluginPlatform.class, Boolean.class, String[].class)
+					.invoke(null, AppLaunch.pluginPlatform(), dev, args);
 		}
 		throw new RuntimeException("unknown environment " + AppCommandLine.launchTarget);
 	}

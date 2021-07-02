@@ -24,13 +24,9 @@
  */
 package org.spongepowered.fabric.applaunch;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.fusesource.jansi.AnsiConsole;
-import org.spongepowered.common.applaunch.config.core.SpongeConfigs;
-import org.spongepowered.fabric.applaunch.plugin.FabricPluginEngine;
+import org.spongepowered.fabric.applaunch.plugin.FabricPluginPlatform;
 import org.spongepowered.plugin.PluginEnvironment;
-import org.spongepowered.plugin.PluginKeys;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -44,15 +40,10 @@ public final class Main {
         AnsiConsole.systemInstall();
     }
 
-    private static Main instance;
-
-    private final Logger logger;
-    private final FabricPluginEngine pluginEngine;
+    private final FabricPluginPlatform pluginPlatform;
 
     public Main() {
-        Main.instance = this;
-        this.logger = LogManager.getLogger("App Launch");
-        this.pluginEngine = new FabricPluginEngine(new PluginEnvironment());
+        this.pluginPlatform = new FabricPluginPlatform(new PluginEnvironment());
     }
 
     public static void main(final String[] args) throws Exception {
@@ -60,19 +51,12 @@ public final class Main {
         new Main().run();
     }
 
-    public static Main getInstance() {
-        return Main.instance;
-    }
-
     public void run() throws IOException {
-
         final String implementationVersion = PluginEnvironment.class.getPackage().getImplementationVersion();
 
-        this.pluginEngine.getPluginEnvironment().blackboard()
-                .getOrCreate(PluginKeys.VERSION, () -> implementationVersion == null ? "dev" : implementationVersion);
-        this.pluginEngine.getPluginEnvironment().blackboard().getOrCreate(PluginKeys.BASE_DIRECTORY, () -> AppCommandLine.gameDirectory);
+        this.pluginPlatform.setVersion(implementationVersion == null ? "dev" : implementationVersion);
+        this.pluginPlatform.setBaseDirectory(AppCommandLine.gameDirectory);
 
-        SpongeConfigs.initialize(this.pluginEngine.getPluginEnvironment());
         final Path modsDirectory = AppCommandLine.gameDirectory.resolve("mods");
         if (Files.notExists(modsDirectory)) {
             Files.createDirectories(modsDirectory);
@@ -83,12 +67,8 @@ public final class Main {
         if (Files.exists(pluginsDirectory)) {
             pluginDirectories.add(pluginsDirectory);
         }
-        this.pluginEngine.getPluginEnvironment().blackboard().getOrCreate(PluginKeys.PLUGIN_DIRECTORIES, () -> pluginDirectories);
+        this.pluginPlatform.setPluginDirectories(pluginDirectories);
 
-        this.pluginEngine.configure();
-    }
-
-    public FabricPluginEngine getPluginEngine() {
-        return this.pluginEngine;
+        this.pluginPlatform.configure();
     }
 }
