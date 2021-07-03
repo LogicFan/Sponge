@@ -346,6 +346,10 @@ license {
 	newLine(false)
 }
 
+loom {
+	accessWidener(commonProject.file("src/main/resources/common.accesswidener"))
+}
+
 afterEvaluate {
 	commonProject.tasks.withType(JavaCompile::class) {
 		options.compilerArgs.add(
