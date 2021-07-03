@@ -39,6 +39,7 @@ import org.spongepowered.plugin.metadata.PluginMetadata;
 import org.spongepowered.plugin.metadata.util.PluginMetadataHelper;
 import org.spongepowered.fabric.applaunch.plugin.FabricPluginPlatform;
 import org.spongepowered.fabric.launch.plugin.FabricPluginManager;
+import org.spongepowered.fabric.launch.inject.SpongeFabricModule;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -99,8 +100,8 @@ public abstract class FabricLaunch extends Launch {
     public Injector createInjector() {
         final List<Module> modules = Lists.newArrayList(
                 new SpongeModule(),
-                new SpongeCommonModule()
-                // SpongeFabric Module
+                new SpongeCommonModule(),
+                new SpongeFabricModule()
         );
         return Guice.createInjector(this.injectionStage(), modules);
     }
