@@ -30,8 +30,8 @@ import org.spongepowered.fabric.applaunch.plugin.FabricPluginPlatform;
 
 public final class DedicatedServerLaunch extends FabricLaunch {
 
-    protected DedicatedServerLaunch(final FabricPluginPlatform pluginEngine, final Stage injectionStage) {
-        super(pluginEngine, injectionStage);
+    protected DedicatedServerLaunch(final FabricPluginPlatform pluginPlatform, final Stage injectionStage) {
+        super(pluginPlatform, injectionStage);
     }
 
     public static void launch(final FabricPluginPlatform pluginEngine, final Boolean isDeveloperEnvironment, final String[] args) {

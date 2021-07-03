@@ -25,6 +25,7 @@
 package org.spongepowered.fabric.applaunch;
 
 import org.fusesource.jansi.AnsiConsole;
+import org.spongepowered.common.applaunch.AppLaunch;
 import org.spongepowered.fabric.applaunch.plugin.FabricPluginPlatform;
 import org.spongepowered.plugin.PluginEnvironment;
 
@@ -43,7 +44,7 @@ public final class Main {
     private final FabricPluginPlatform pluginPlatform;
 
     public Main() {
-        this.pluginPlatform = new FabricPluginPlatform(new PluginEnvironment());
+        this.pluginPlatform = AppLaunch.setPluginPlatform(new FabricPluginPlatform(new PluginEnvironment()));
     }
 
     public static void main(final String[] args) throws Exception {
