@@ -3,6 +3,12 @@
 import org.jetbrains.gradle.ext.TaskTriggersConfig
 import org.spongepowered.gradle.impl.OutputDependenciesToJson
 
+// Mixin Annotation Processor
+import net.fabricmc.loom.util.Constants.MixinArguments.IN_MAP_FILE_NAMED_INTERMEDIARY;
+import net.fabricmc.loom.util.Constants.MixinArguments.OUT_MAP_FILE_NAMED_INTERMEDIARY;
+import net.fabricmc.loom.util.Constants.MixinArguments.OUT_REFMAP_FILE;
+import net.fabricmc.loom.util.Constants.MixinArguments.DEFAULT_OBFUSCATION_ENV;
+
 plugins {
 	id("fabric-loom")
 	id("com.github.johnrengelman.shadow")
@@ -338,6 +344,19 @@ license {
 
 	include("**/*.java")
 	newLine(false)
+}
+
+afterEvaluate {
+	commonProject.tasks.withType(JavaCompile::class) {
+		options.compilerArgs.add(
+			"-A${IN_MAP_FILE_NAMED_INTERMEDIARY}=${loom.mappingsProvider.tinyMappings.canonicalPath}")
+		options.compilerArgs.add(
+			"-A${OUT_MAP_FILE_NAMED_INTERMEDIARY}=${loom.nextMixinMappings.canonicalPath}")
+		options.compilerArgs.add(
+			"-A${OUT_REFMAP_FILE}=${File(this.destinationDir, "spongefabric-refmap.json").canonicalPath}")
+		options.compilerArgs.add(
+			"-A${DEFAULT_OBFUSCATION_ENV}=named:intermediary")
+	}
 }
 
 val shadowJar by tasks.existing
