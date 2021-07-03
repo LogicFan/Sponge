@@ -42,14 +42,11 @@ public final class DedicatedServerLaunch extends FabricLaunch {
     }
 
     @Override
-    public boolean isDedicatedServer() {
+    public boolean dedicatedServer() {
         return true;
     }
 
-    public void launchPlatform(final String[] args) {
-        super.onLaunch();
-        this.getLogger().info("Loading Sponge, please wait...");
-
+    public void performBootstrap(final String[] args) {
         SpongeBootstrap.perform("Server", () -> {});
     }
 }

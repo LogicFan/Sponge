@@ -105,8 +105,8 @@ public final class FabricPluginManager implements SpongePluginManager {
     }
 
     @SuppressWarnings("unchecked")
-    public void loadPlugins(final FabricPluginPlatform engine) {
-        for (final Map.Entry<PluginLanguageService<PluginResource>, List<PluginCandidate<PluginResource>>> languageCandidates : engine.getCandidates().entrySet()) {
+    public void loadPlugins(final FabricPluginPlatform platform) {
+        for (final Map.Entry<PluginLanguageService<PluginResource>, List<PluginCandidate<PluginResource>>> languageCandidates : platform.getCandidates().entrySet()) {
             final PluginLanguageService<PluginResource> languageService = languageCandidates.getKey();
             final Collection<PluginCandidate<PluginResource>> candidates = languageCandidates.getValue();
             final String loaderClass = languageService.pluginLoader();
@@ -126,15 +126,15 @@ public final class FabricPluginManager implements SpongePluginManager {
                     continue;
                 }
 
-                plugin = pluginLoader.createPluginContainer(candidate, engine.getPluginEnvironment()).orElse(null);
+                plugin = pluginLoader.createPluginContainer(candidate, platform.getPluginEnvironment()).orElse(null);
                 if (plugin == null) {
-                    engine.logger().debug("Language service '{}' returned a null plugin container for '{}'.",
+                    platform.logger().debug("Language service '{}' returned a null plugin container for '{}'.",
                             languageService.name(), candidate.metadata().id());
                     continue;
                 }
 
                 try {
-                    pluginLoader.loadPlugin(engine.getPluginEnvironment(), plugin, FabricLaunch.instance().getClass().getClassLoader());
+                    pluginLoader.loadPlugin(platform.getPluginEnvironment(), plugin, FabricLaunch.instance().getClass().getClassLoader());
                     this.addPlugin(plugin);
                 } catch (final InvalidPluginException e) {
                     e.printStackTrace();
@@ -142,7 +142,7 @@ public final class FabricPluginManager implements SpongePluginManager {
             }
         }
 
-        engine.logger().info("Loaded plugin(s): {}",
+        platform.logger().info("Loaded plugin(s): {}",
                 this.sortedPlugins.stream().map(p -> p.metadata().id()).collect(Collectors.toList()));
     }
 }

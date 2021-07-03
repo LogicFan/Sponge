@@ -24,12 +24,16 @@
  */
 package org.spongepowered.fabric.launch;
 
+import com.google.common.collect.Lists;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Module;
 import com.google.inject.Stage;
-import org.spongepowered.common.applaunch.plugin.PluginEngine;
+import org.spongepowered.common.inject.SpongeCommonModule;
+import org.spongepowered.common.inject.SpongeModule;
 import org.spongepowered.common.launch.Launch;
 import org.spongepowered.common.launch.plugin.DummyPluginContainer;
 import org.spongepowered.plugin.PluginContainer;
-import org.spongepowered.plugin.PluginKeys;
 import org.spongepowered.plugin.jvm.locator.JVMPluginResourceLocatorService;
 import org.spongepowered.plugin.metadata.PluginMetadata;
 import org.spongepowered.plugin.metadata.util.PluginMetadataHelper;
@@ -43,37 +47,35 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Objects;
 
 public abstract class FabricLaunch extends Launch {
 
     private final Stage injectionStage;
+    private final FabricPluginManager pluginManager;
     private PluginContainer fabricPlugin;
 
-    protected FabricLaunch(final FabricPluginPlatform pluginEngine, final Stage injectionStage) {
-        super(pluginEngine, new FabricPluginManager());
+    protected FabricLaunch(final FabricPluginPlatform pluginPlatform, final Stage injectionStage) {
+        super(pluginPlatform);
         this.injectionStage = injectionStage;
+        this.pluginManager = new FabricPluginManager();
     }
 
     @Override
-    public final boolean isVanilla() {
-        return false;
-    }
-
-    @Override
-    public final Stage getInjectionStage() {
+    public final Stage injectionStage() {
         return this.injectionStage;
     }
 
     @Override
-    public final void loadPlugins() {
-        this.getPluginManager().loadPlugins(this.getPluginEngine());
+    public final void performLifecycle() {
+        this.pluginManager.loadPlugins(this.pluginPlatform());
     }
 
     @Override
-    public final PluginContainer getPlatformPlugin() {
+    public final PluginContainer platformPlugin() {
         if (this.fabricPlugin == null) {
-            this.fabricPlugin = this.getPluginManager().plugin("spongefabric").orElse(null);
+            this.fabricPlugin = this.pluginManager().plugin("spongefabric").orElse(null);
 
             if (this.fabricPlugin == null) {
                 throw new RuntimeException("Could not find the plugin representing SpongeFabric, this is a serious issue!");
@@ -84,10 +86,34 @@ public abstract class FabricLaunch extends Launch {
     }
 
     @Override
-    protected final void createPlatformPlugins(final PluginEngine pluginEngine) {
-        final Path gameDirectory = this.pluginEngine.getPluginEnvironment().blackboard().get(PluginKeys.BASE_DIRECTORY)
-                .orElseThrow(() -> new RuntimeException("The game directory has not been added to the environment!"));
+    public final FabricPluginPlatform pluginPlatform() {
+        return (FabricPluginPlatform) this.pluginPlatform;
+    }
 
+    @Override
+    public final FabricPluginManager pluginManager() {
+        return this.pluginManager;
+    }
+
+    @Override
+    public Injector createInjector() {
+        final List<Module> modules = Lists.newArrayList(
+                new SpongeModule(),
+                new SpongeCommonModule()
+                // SpongeFabric Module
+        );
+        return Guice.createInjector(this.injectionStage(), modules);
+    }
+
+    protected final void launchPlatform(final String[] args) {
+        this.createPlatformPlugins();
+        this.logger().info("Loading Sponge, please wait...");
+        this.performBootstrap(args);
+    }
+
+    protected abstract void performBootstrap(final String[] args);
+
+    protected final void createPlatformPlugins() {
         try {
             // This is a bit nasty, but allows Sponge to detect builtin platform plugins when it's not the first entry on the classpath.
             final URL classUrl = FabricLaunch.class.getResource("/" + FabricLaunch.class.getName().replace('.', '/') + ".class");
@@ -95,8 +121,7 @@ public abstract class FabricLaunch extends Launch {
             Collection<PluginMetadata> read = null;
 
             // In production, let's try to ensure we can find our descriptor even if we're not first on the classpath
-            assert classUrl != null;
-            if (classUrl.getProtocol().equals("jar")) {
+            if (Objects.requireNonNull(classUrl).getProtocol().equals("jar")) {
                 // Extract the path of the underlying jar file, and parse it as a path to normalize it
                 final String[] classUrlSplit = classUrl.getPath().split("!");
                 final Path expectedFile = Paths.get(new URL(classUrlSplit[0]).toURI());
@@ -130,20 +155,10 @@ public abstract class FabricLaunch extends Launch {
             }
 
             for (final PluginMetadata metadata : read) {
-                this.getPluginManager().addDummyPlugin(new DummyPluginContainer(metadata, gameDirectory, this.getLogger(), this));
+                this.pluginManager().addDummyPlugin(new DummyPluginContainer(metadata, this.logger(), this));
             }
         } catch (final IOException | URISyntaxException e) {
             throw new RuntimeException("Could not load metadata information for the implementation! This should be impossible!");
         }
-    }
-
-    @Override
-    public FabricPluginPlatform getPluginEngine() {
-        return (FabricPluginPlatform) this.pluginEngine;
-    }
-
-    @Override
-    public FabricPluginManager getPluginManager() {
-        return (FabricPluginManager) this.pluginManager;
     }
 }
