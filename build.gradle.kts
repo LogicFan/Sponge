@@ -163,9 +163,16 @@ dependencies {
     implementation("net.kyori:adventure-serializer-configurate4")
 
     if (findProject(":SpongeFabric") != null) {
-        val mixinsAp = mixins.get().annotationProcessorConfigurationName;
-        mixinsAp("org.spongepowered:mixin:0.8.2:processor")
+        annotationProcessor("org.spongepowered:mixin:0.8.3:processor")
+        annotationProcessor("net.fabricmc:fabric-mixin-compile-extensions:0.4.4")
+
+        val mixinsAp = mixins.get().annotationProcessorConfigurationName
+        mixinsAp("org.spongepowered:mixin:0.8.3:processor")
         mixinsAp("net.fabricmc:fabric-mixin-compile-extensions:0.4.4")
+
+        val accessorsAp = accessors.get().annotationProcessorConfigurationName
+        accessorsAp("org.spongepowered:mixin:0.8.3:processor")
+        accessorsAp("net.fabricmc:fabric-mixin-compile-extensions:0.4.4")
     }
 
     // Launch Dependencies - Needed to bootstrap the engine(s)

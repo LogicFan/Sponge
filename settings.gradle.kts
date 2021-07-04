@@ -22,6 +22,7 @@ pluginManagement {
         id("org.jetbrains.gradle.plugin.idea-ext") version "1.0"
         id("com.github.ben-manes.versions") version "0.39.0"
         id("fabric-loom") version "0.9-SNAPSHOT"
+        id("com.github.logicfan.gradle.shadow.json-transformer") version "1.0.1"
     }
 }
 

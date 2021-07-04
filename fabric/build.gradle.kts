@@ -2,6 +2,7 @@
 
 import org.jetbrains.gradle.ext.TaskTriggersConfig
 import org.spongepowered.gradle.impl.OutputDependenciesToJson
+import com.github.logicfan.gradle.shadow.transformers.JsonTransformer
 
 // Mixin Annotation Processor
 import net.fabricmc.loom.util.Constants.MixinArguments.IN_MAP_FILE_NAMED_INTERMEDIARY;
@@ -14,6 +15,7 @@ plugins {
 	id("com.github.johnrengelman.shadow")
 	id("implementation-structure")
 	id("templated-resources")
+	id("com.github.logicfan.gradle.shadow.json-transformer")
 	eclipse
 }
 
@@ -297,6 +299,10 @@ tasks {
 
 		configurations = listOf(project.configurations.getByName(fabricInstaller.runtimeClasspathConfigurationName))
 
+		transform(JsonTransformer::class.java) {
+			resource = "spongefabric-refmap.json"
+		}
+
 		dependencies {
 			// do not shade fabric-loader
 			exclude(dependency("net.fabricmc:fabric-loader"))
@@ -347,7 +353,8 @@ license {
 }
 
 loom {
-	accessWidener(commonProject.file("src/main/resources/common.accesswidener"))
+	refmapName = "spongefabric-refmap.json"
+	accessWidener = commonProject.file("src/main/resources/common.accesswidener")
 }
 
 afterEvaluate {
