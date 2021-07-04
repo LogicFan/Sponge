@@ -2,6 +2,7 @@ import org.spongepowered.gradle.vanilla.repository.MinecraftRepositoryExtension
 
 pluginManagement {
     repositories {
+        mavenLocal()
         maven("https://repo.spongepowered.org/repository/maven-public/") {
             name = "sponge"
         }
@@ -9,7 +10,6 @@ pluginManagement {
             name = "Fabric"
         }
         gradlePluginPortal()
-        mavenLocal()
     }
 
     plugins {

@@ -72,11 +72,7 @@ public final class InstallerMain {
             .map(LibraryManager.Library::getFile)
             .forEach(path -> {
                 Logger.debug("Adding jar {} to classpath", path);
-                try {
-                    FabricLauncherBase.getLauncher().propose(path.toUri().toURL());
-                } catch (MalformedURLException e) {
-                    Logger.error(e, "Error on adding jar {} to classpath", path.toUri());
-                }
+                FabricLauncherBase.getLauncher().addToClassPath(path);
             });
 
         final List<String> gameArgs = new ArrayList<>(LauncherCommandLine.remainingArgs);

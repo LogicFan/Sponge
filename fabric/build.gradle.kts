@@ -32,7 +32,7 @@ val testplugins: Project? = rootProject.subprojects.find { "testplugins" == it.n
 // Fabric variables
 val name : String by project
 // val loaderVersion : String by project
-val loaderVersion = "0.11.6+local"
+val loaderVersion = "0.12.0+local"
 val modVersion : String by project
 
 // project variables
