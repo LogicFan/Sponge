@@ -22,12 +22,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.event.cause.entity.damage;
+package org.spongepowered.common.tag;
 
-public final class DamageObject {
+import org.spongepowered.api.registry.RegistryType;
+import org.spongepowered.api.tag.Tag;
+import org.spongepowered.api.tag.TagType;
+import org.spongepowered.api.tag.Taggable;
 
-    int slot;
-    double ratio;
-    boolean augment;
-    double previousDamage;
+public final class SpongeTagType<T extends Taggable<T>> implements TagType<T> {
+
+    private final String id;
+    private final RegistryType<T> taggableRegistry;
+    private final RegistryType<Tag<T>> tagRegistry;
+
+    public SpongeTagType(String id, RegistryType<T> taggableRegistry, RegistryType<Tag<T>> tagRegistry) {
+        this.id = id;
+        this.taggableRegistry = taggableRegistry;
+        this.tagRegistry = tagRegistry;
+    }
+
+    /**
+     * The internal id for this tag type.
+     * Used for the directory.
+     *
+     * @return This TagType's id
+     */
+    public String internalId() {
+        return this.id;
+    }
+
+    @Override
+    public RegistryType<T> taggableRegistry() {
+        return this.taggableRegistry;
+    }
+
+    @Override
+    public RegistryType<Tag<T>> tagRegistry() {
+        return this.tagRegistry;
+    }
 }

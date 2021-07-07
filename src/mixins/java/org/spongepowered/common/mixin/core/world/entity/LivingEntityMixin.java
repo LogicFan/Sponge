@@ -85,7 +85,7 @@ import org.spongepowered.common.bridge.world.entity.player.PlayerBridge;
 import org.spongepowered.common.entity.living.human.HumanEntity;
 import org.spongepowered.common.event.ShouldFire;
 import org.spongepowered.common.event.SpongeCommonEventFactory;
-import org.spongepowered.common.event.cause.entity.damage.DamageEventHandler;
+import org.spongepowered.common.util.DamageEventUtil;
 import org.spongepowered.common.event.cause.entity.damage.SpongeDamageSources;
 import org.spongepowered.common.event.tracking.PhaseTracker;
 import org.spongepowered.common.item.util.ItemStackUtil;
@@ -173,42 +173,7 @@ public abstract class LivingEntityMixin extends EntityMixin implements LivingEnt
     @Nullable private ItemStack impl$activeItemStackCopy;
     @Nullable private Vector3d impl$preTeleportPosition;
     private int impl$deathEventsPosted;
-    private int impl$maxAir = this.shadow$getMaxAirSupply();
 
-/*    @Override
-    public int bridge$getMaxAir() {
-        return this.impl$maxAir;
-    }
-
-    @Override
-    public void bridge$setMaxAir(final int air) {
-        this.impl$maxAir = air;
-        if (air != Constants.Sponge.Entity.DEFAULT_MAX_AIR) {
-            final CompoundNBT spongeData = ((DataCompoundHolder) this).data$getSpongeDataCompound();
-            spongeData.putInt(Constants.Sponge.Entity.MAX_AIR, air);
-        } else {
-            if (((DataCompoundHolder) this).data$hasSpongeDataCompound()) {
-                ((DataCompoundHolder) this).data$getSpongeDataCompound().remove(Constants.Sponge.Entity.MAX_AIR);
-            }
-        }
-    }
-
-    @Override
-    public void impl$readFromSpongeCompound(final CompoundNBT compound) {
-        super.impl$readFromSpongeCompound(compound);
-        if (compound.contains(Constants.Sponge.Entity.MAX_AIR)) {
-            this.impl$maxAir = compound.getInt(Constants.Sponge.Entity.MAX_AIR);
-        }
-    }
-
-    @Override
-    public void impl$writeToSpongeCompound(final CompoundNBT compound) {
-        super.impl$writeToSpongeCompound(compound);
-        if (this.impl$maxAir != Constants.Sponge.Entity.DEFAULT_MAX_AIR) { // We don't need to set max air unless it's really necessary
-            compound.putInt(Constants.Sponge.Entity.MAX_AIR, this.impl$maxAir);
-        }
-    }
- */
     @Override
     public boolean bridge$damageEntity(final DamageSource damageSource, float damage) {
         if (this.shadow$isInvulnerableTo(damageSource)) {
@@ -225,17 +190,17 @@ public abstract class LivingEntityMixin extends EntityMixin implements LivingEnt
 
         final List<DamageFunction> originalFunctions = new ArrayList<>();
         final Optional<DamageFunction> hardHatFunction =
-                DamageEventHandler.createHardHatModifier((LivingEntity) (Object) this, damageSource);
+                DamageEventUtil.createHardHatModifier((LivingEntity) (Object) this, damageSource);
         final Optional<DamageFunction> armorFunction =
-                DamageEventHandler.createArmorModifiers((LivingEntity) (Object) this, damageSource);
+                DamageEventUtil.createArmorModifiers((LivingEntity) (Object) this, damageSource);
         final Optional<DamageFunction> resistanceFunction =
-                DamageEventHandler.createResistanceModifier((LivingEntity) (Object) this, damageSource);
+                DamageEventUtil.createResistanceModifier((LivingEntity) (Object) this, damageSource);
         final Optional<List<DamageFunction>> armorEnchantments =
-                DamageEventHandler.createEnchantmentModifiers((LivingEntity) (Object) this, damageSource);
+                DamageEventUtil.createEnchantmentModifiers((LivingEntity) (Object) this, damageSource);
         final Optional<DamageFunction> absorptionFunction =
-                DamageEventHandler.createAbsorptionModifier((LivingEntity) (Object) this);
+                DamageEventUtil.createAbsorptionModifier((LivingEntity) (Object) this);
         final Optional<DamageFunction> shieldFunction =
-                DamageEventHandler.createShieldFunction((LivingEntity) (Object) this, damageSource, damage);
+                DamageEventUtil.createShieldFunction((LivingEntity) (Object) this, damageSource, damage);
 
         hardHatFunction.ifPresent(originalFunctions::add);
 
@@ -249,7 +214,7 @@ public abstract class LivingEntityMixin extends EntityMixin implements LivingEnt
 
         absorptionFunction.ifPresent(originalFunctions::add);
         try (final CauseStackManager.StackFrame frame = PhaseTracker.getCauseStackManager().pushCauseFrame()) {
-            DamageEventHandler.generateCauseFor(damageSource, frame);
+            DamageEventUtil.generateCauseFor(damageSource, frame);
 
             final DamageEntityEvent event = SpongeEventFactory
                     .createDamageEntityEvent(frame.currentCause(), (org.spongepowered.api.entity.Entity) this, originalFunctions,
