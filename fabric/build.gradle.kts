@@ -357,18 +357,18 @@ loom {
 	accessWidener = commonProject.file("src/main/resources/common.accesswidener")
 }
 
-afterEvaluate {
-	commonProject.tasks.withType(JavaCompile::class) {
-		options.compilerArgs.add(
-			"-A${IN_MAP_FILE_NAMED_INTERMEDIARY}=${loom.mappingsProvider.tinyMappings.canonicalPath}")
-		options.compilerArgs.add(
-			"-A${OUT_MAP_FILE_NAMED_INTERMEDIARY}=${loom.nextMixinMappings.canonicalPath}")
-		options.compilerArgs.add(
-			"-A${OUT_REFMAP_FILE}=${File(this.destinationDir, "spongefabric-refmap.json").canonicalPath}")
-		options.compilerArgs.add(
-			"-A${DEFAULT_OBFUSCATION_ENV}=named:intermediary")
-	}
-}
+//afterEvaluate {
+//	commonProject.tasks.withType(JavaCompile::class) {
+//		options.compilerArgs.add(
+//			"-A${IN_MAP_FILE_NAMED_INTERMEDIARY}=${loom.mappingsProvider.tinyMappings.canonicalPath}")
+//		options.compilerArgs.add(
+//			"-A${OUT_MAP_FILE_NAMED_INTERMEDIARY}=${loom.nextMixinMappings.canonicalPath}")
+//		options.compilerArgs.add(
+//			"-A${OUT_REFMAP_FILE}=${File(this.destinationDir, "spongefabric-refmap.json").canonicalPath}")
+//		options.compilerArgs.add(
+//			"-A${DEFAULT_OBFUSCATION_ENV}=named:intermediary")
+//	}
+//}
 
 val shadowJar by tasks.existing
 val remapJar by tasks.existing
