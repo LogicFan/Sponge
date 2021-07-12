@@ -162,21 +162,6 @@ dependencies {
     implementation(platform("net.kyori:adventure-bom:$apiAdventureVersion"))
     implementation("net.kyori:adventure-serializer-configurate4")
 
-//    if (findProject(":SpongeFabric") != null) {
-//        val mixinVersion = "0.8.3"
-//        val fabricMixinExtensionVersion = "0.4.4"
-//        annotationProcessor("org.spongepowered:mixin:${mixinVersion}:processor")
-//        annotationProcessor("net.fabricmc:fabric-mixin-compile-extensions:${fabricMixinExtensionVersion}")
-//
-//        val mixinsAp = mixins.get().annotationProcessorConfigurationName
-//        mixinsAp("org.spongepowered:mixin:${mixinVersion}:processor")
-//        mixinsAp("net.fabricmc:fabric-mixin-compile-extensions:${fabricMixinExtensionVersion}")
-//
-//        val accessorsAp = accessors.get().annotationProcessorConfigurationName
-//        accessorsAp("org.spongepowered:mixin:${mixinVersion}:processor")
-//        accessorsAp("net.fabricmc:fabric-mixin-compile-extensions:${fabricMixinExtensionVersion}")
-//    }
-
     // Launch Dependencies - Needed to bootstrap the engine(s)
     launchConfig("org.spongepowered:spongeapi:$apiVersion")
     launchConfig("org.spongepowered:plugin-spi:$pluginSpiVersion")
@@ -239,8 +224,8 @@ allprojects {
         resolutionStrategy.dependencySubstitution {
             // https://github.com/zml2008/guice/tree/backport/5.0.1
             substitute(module("com.google.inject:guice:5.0.1"))
-                    .because("We need to run against Guava 21")
-                    .using(module("ca.stellardrift.guice-backport:guice:5.0.1"))
+                .because("We need to run against Guava 21")
+                .using(module("ca.stellardrift.guice-backport:guice:5.0.1"))
         }
     }
 
@@ -295,6 +280,7 @@ allprojects {
     val spongeSnapshotRepo: String? by project
     val spongeReleaseRepo: String? by project
     tasks {
+        val emptyAnnotationProcessors = objects.fileCollection()
         withType(JavaCompile::class).configureEach {
             options.compilerArgs.addAll(listOf("-Xmaxerrs", "1000"))
             options.encoding = "UTF-8"
@@ -370,8 +356,8 @@ tasks {
         archiveClassifier.set("dev")
         manifest {
             attributes(mapOf(
-                    "Access-Widener" to "common.accesswidener",
-                    "Multi-Release" to true
+                "Access-Widener" to "common.accesswidener",
+                "Multi-Release" to true
             ))
             from(commonManifest)
         }
