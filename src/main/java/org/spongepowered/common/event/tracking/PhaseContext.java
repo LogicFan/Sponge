@@ -27,34 +27,28 @@ package org.spongepowered.common.event.tracking;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import net.minecraft.world.entity.player.Player;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
-import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Cause;
 import org.spongepowered.api.event.CauseStackManager;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.EventContextKeys;
 import org.spongepowered.common.applaunch.config.core.SpongeConfigs;
-import org.spongepowered.common.block.SpongeBlockSnapshot;
 import org.spongepowered.common.bridge.server.level.ServerPlayerBridge;
 import org.spongepowered.common.bridge.world.inventory.container.TrackedInventoryBridge;
 import org.spongepowered.common.event.tracking.context.transaction.TransactionalCaptureSupplier;
 import org.spongepowered.common.util.MemoizedSupplier;
 import org.spongepowered.common.util.PrettyPrinter;
-import org.spongepowered.common.world.BlockChange;
 
-import java.util.Collections;
 import java.util.Deque;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.player.Player;
 
 /**
  * Similar to {@link Cause} except it can be built continuously and retains no
@@ -124,32 +118,6 @@ public class PhaseContext<P extends PhaseContext<P>> implements PhaseStateProxy<
             throw new IllegalStateException("Notifier for this phase context is already set!");
         }
         this.notifier = checkNotNull(notifier, "Notifier cannot be null!");
-        return (P) this;
-    }
-
-    private void checkBlockSuppliers() {
-    }
-
-    public P addBlockCaptures() {
-        checkState(!this.isCompleted, "Cannot add a new object to the context if it's already marked as completed!");
-        this.checkBlockSuppliers();
-
-        this.transactor = new TransactionalCaptureSupplier();
-        return (P) this;
-    }
-
-    public P addCaptures() {
-        checkState(!this.isCompleted, "Cannot add a new object to the context if it's already marked as completed!");
-        return (P) this;
-    }
-
-    public P addEntityCaptures() {
-        checkState(!this.isCompleted, "Cannot add a new object to the context if it's already marked as completed!");
-        return (P) this;
-    }
-
-    public P addEntityDropCaptures() {
-        checkState(!this.isCompleted, "Cannot add a new object to the context if it's already marked as completed!");
         return (P) this;
     }
 
@@ -280,40 +248,6 @@ public class PhaseContext<P extends PhaseContext<P>> implements PhaseStateProxy<
             return true;
         }
         return false;
-    }
-
-    /**
-     * Gets the {@link List} of the <b>first</b> {@link BlockSnapshot}s that originally
-     * existed at their set {@link BlockPos block position} such that this list is not
-     * self updating and a copy of the parsed list. The reason for this to return
-     * a list of {@link SpongeBlockSnapshot}s is to handle the ability for
-     * {@link BlockChange} being ensured to be correct according to this context's
-     * {@link TransactionalCaptureSupplier}. It is intended that the returned list is not
-     * self updating, nor is it to be used as to "remove" blocks from being captured.
-     *
-     * <p>To mutate entries presented in the returned list, use {@link #getTransactor()}
-     * and methods available in {@link TransactionalCaptureSupplier} such as:
-     * <ul>
-     *     <li>{@link TransactionalCaptureSupplier#clear()} - To clear the captured lists</li>
-     *     <li>{@link TransactionalCaptureSupplier#reset()} to remove a block snapshot change</li>
-     * </ul>
-     * Provided functionality through the supplier is aimed for common manipulation in
-     * {@link IPhaseState}s and for the obvious reasons of capturing block changes, as long
-     * as {@code IPhaseState#shouldCaptureBlockChangeOrSkip(PhaseContext, BlockPos, IBlockState, IBlockState, org.spongepowered.api.world.BlockChangeFlag)} returns
-     * {@code true}.
-     *
-     * <p>If post phase processing requires constant updating of the list and/or intermediary
-     * {@link SpongeBlockSnapshot} changes to be pruned, it is advised to do so via
-     * a post state since internal tracked event transactions are not clearable.</p>
-     *
-     * @return A list of original block snapshots that are now changed
-     * @throws IllegalStateException If there is no capture supplier set up for this context
-     */
-    public List<SpongeBlockSnapshot> getCapturedOriginalBlocksChanged() throws IllegalStateException {
-        if (this.transactor == null) {
-            throw TrackingUtil.throwWithContext("Expected to be capturing blocks, but we're not capturing them!", this).get();
-        }
-        return Collections.emptyList();
     }
 
     public TransactionalCaptureSupplier getTransactor() {

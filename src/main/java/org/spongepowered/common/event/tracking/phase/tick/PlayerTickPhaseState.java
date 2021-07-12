@@ -44,10 +44,7 @@ class PlayerTickPhaseState extends TickPhaseState<PlayerTickContext> {
 
     @Override
     protected PlayerTickContext createNewContext(final PhaseTracker tracker) {
-        return new PlayerTickContext(tracker)
-                .addCaptures()
-                .addEntityDropCaptures()
-                ;
+        return new PlayerTickContext(tracker);
     }
 
     @Override
@@ -57,18 +54,7 @@ class PlayerTickPhaseState extends TickPhaseState<PlayerTickContext> {
 
     @Override
     public void unwind(final PlayerTickContext context) {
-        final Player player = context.getSource(Player.class)
-                .orElseThrow(TrackingUtil.throwWithContext("Not ticking on a Player!", context));
-        try (final CauseStackManager.StackFrame frame = PhaseTracker.getCauseStackManager().pushCauseFrame()) {
-            frame.pushCause(player);
-//            frame.addContext(EventContextKeys.SPAWN_TYPE, SpawnTypes.PASSIVE);
-//            context.getCapturedEntitySupplier().acceptAndClearIfNotEmpty(entities -> {
-//                SpongeCommonEventFactory.callSpawnEntity(entities, context);
-//            });
-            frame.addContext(EventContextKeys.SPAWN_TYPE, SpawnTypes.DROPPED_ITEM);
-
-            TrackingUtil.processBlockCaptures(context);
-        }
+        TrackingUtil.processBlockCaptures(context);
     }
 
     @Override
@@ -80,8 +66,4 @@ class PlayerTickPhaseState extends TickPhaseState<PlayerTickContext> {
         explosionContext.source(player);
     }
 
-    @Override
-    public boolean doesDenyChunkRequests(final PlayerTickContext context) {
-        return false;
-    }
 }

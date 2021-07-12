@@ -22,36 +22,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.event.tracking.phase.tick;
+package org.spongepowered.common.mixin.tracker.world.entity.animal;
 
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.CauseStackManager;
 import org.spongepowered.api.event.EventContextKeys;
-import org.spongepowered.api.event.cause.entity.SpawnTypes;
-import org.spongepowered.common.event.tracking.PhaseTracker;
-import org.spongepowered.common.event.tracking.TrackingUtil;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.common.event.tracking.phase.tick.EntityTickContext;
+import org.spongepowered.common.mixin.tracker.world.entity.LivingEntityMixin_Tracker;
 
-class DimensionTickPhaseState extends TickPhaseState<DimensionContext> {
-    DimensionTickPhaseState() {
-    }
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.animal.Animal;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+@Mixin(Animal.class)
+public abstract class AnimalMixin_Tracker extends LivingEntityMixin_Tracker {
+
+    //@formatter:off
+    @Shadow public abstract @Nullable ServerPlayer shadow$getLoveCause();
+    //@formatter:on
 
     @Override
-    public DimensionContext createNewContext(final PhaseTracker tracker) {
-        return new DimensionContext(tracker)
-                .addBlockCaptures()
-                .addEntityCaptures()
-                .addEntityDropCaptures();
-    }
-
-    @Override
-    public void unwind(final DimensionContext phaseContext) {
-        try (final CauseStackManager.StackFrame frame = PhaseTracker.getCauseStackManager().pushCauseFrame()) {
-            frame.addContext(EventContextKeys.SPAWN_TYPE, SpawnTypes.PLACEMENT);
-            TrackingUtil.processBlockCaptures(phaseContext);
+    public void tracker$populateFrameInTickContext(
+        final CauseStackManager.StackFrame frame, final EntityTickContext context
+    ) {
+        final ServerPlayer serverPlayer = this.shadow$getLoveCause();
+        if (serverPlayer != null) {
+            frame.addContext(EventContextKeys.PLAYER, (Player) serverPlayer);
         }
-    }
-
-    @Override
-    public boolean doesDenyChunkRequests(final DimensionContext context) {
-        return false;
+        super.tracker$populateFrameInTickContext(frame, context);
     }
 }

@@ -22,35 +22,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package co.aikar.timings.sponge;
+package org.spongepowered.common.world;
 
-import co.aikar.timings.Timing;
+import org.spongepowered.api.world.LightType;
 
-public final class NullTimingHandler implements Timing {
+public final class SpongeLightType implements LightType {
 
-    @Override
-    public Timing startTiming() {
-        return this;
+    private final int defaultLightValue;
+
+    public SpongeLightType(final int defaultLightValue) {
+        this.defaultLightValue = defaultLightValue;
     }
 
     @Override
-    public void stopTiming() {
-    }
-
-    @Override
-    public void startTimingIfSync() {
-    }
-
-    @Override
-    public void stopTimingIfSync() {
-    }
-
-    @Override
-    public void abort() {
-    }
-
-    @Override
-    public void close() {
+    public int defaultLightValue() {
+        return this.defaultLightValue;
     }
 
 }

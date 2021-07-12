@@ -22,14 +22,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.event.tracking.phase.plugin;
+package co.aikar.timings.sponge;
 
-import org.spongepowered.common.event.tracking.IPhaseState;
-import org.spongepowered.common.event.tracking.PhaseTracker;
+import co.aikar.timings.Timing;
+import net.minecraft.server.MinecraftServer;
 
-public class ServerTickListenerContext extends ListenerPhaseContext<ServerTickListenerContext> {
+public final class ServerTimingsHandler {
 
-    ServerTickListenerContext(final IPhaseState<ServerTickListenerContext> state, final PhaseTracker tracker) {
-        super(state, tracker);
+    public final Timing save;
+
+    public ServerTimingsHandler(final MinecraftServer server) {
+        this.save = SpongeTimingsFactory.ofSafe("Level Save");
     }
 }
