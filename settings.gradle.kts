@@ -55,8 +55,8 @@ includeBuild("SpongeAPI") {
         substitute(module("org.spongepowered:spongeapi")).with(project(":"))
     }
 }
-//include(":SpongeVanilla")
-//project(":SpongeVanilla").projectDir = file("vanilla")
+include(":SpongeVanilla")
+project(":SpongeVanilla").projectDir = file("vanilla")
 include("generator")
 
 include(":SpongeFabric")
