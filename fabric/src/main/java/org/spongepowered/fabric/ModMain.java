@@ -24,22 +24,17 @@
  */
 package org.spongepowered.fabric;
 
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.api.DedicatedServerModInitializer;
-import net.fabricmc.api.ModInitializer;
+import java.lang.reflect.InvocationTargetException;
 
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.entrypoint.PreInitEntrypoint;
-import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
-import net.fabricmc.loader.impl.launch.FabricLauncherBase;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.lang.reflect.InvocationTargetException;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.entrypoint.PreInitEntrypoint;
+import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
 
-public class ModMain implements ModInitializer,
-		ClientModInitializer, DedicatedServerModInitializer,
-		PreLaunchEntrypoint, PreInitEntrypoint {
+public class ModMain implements PreLaunchEntrypoint, PreInitEntrypoint {
 	private static final Logger LOGGER = LogManager.getLogger(ModMain.class);
 
 	@Override
@@ -48,30 +43,21 @@ public class ModMain implements ModInitializer,
 		LOGGER.info("Invoking SpongeFabric Installer with args {}", (Object) args);
 
 		invokeMain("org.spongepowered.fabric.installer.InstallerMain", args);
+
 	}
 
 	@Override
 	public void onPreLaunch() {
-		System.out.println("onPreLaunch");
-	}
-
-	@Override
-	public void onInitialize() {
-		System.out.println("Hello Fabric world!");
-	}
-
-	@Override
-	public void onInitializeClient() {
-		LOGGER.info("Invoking SpongeFabric ClientLaunch");
-
-		invokeMain("org.spongepowered.fabric.applaunch.handler.ClientLaunchHandler", new String[]{});
-	}
-
-	@Override
-	public void onInitializeServer() {
-		LOGGER.info("Invoking SpongeFabric ServerLaunch");
-
-		invokeMain("org.spongepowered.fabric.applaunch.handler.ServerLaunchHandler", new String[]{});
+		EnvType environment = FabricLoader.getInstance().getEnvironmentType();
+		if (environment.equals(EnvType.CLIENT)) {
+			LOGGER.info("Invoking SpongeFabric ClientLaunch");
+			invokeMain("org.spongepowered.fabric.applaunch.handler.ClientLaunchHandler", new String[]{});
+		} else if (environment.equals(EnvType.SERVER)) {
+			LOGGER.info("Invoking SpongeFabric ServerLaunch");
+			invokeMain("org.spongepowered.fabric.applaunch.handler.ServerLaunchHandler", new String[]{});
+		} else {
+			throw new RuntimeException("Unknown environment type");
+		}
 	}
 
 	private static void invokeMain(final String className, final String[] args) {
