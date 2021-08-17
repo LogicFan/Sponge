@@ -6,9 +6,8 @@ pluginManagement {
         maven("https://repo.spongepowered.org/repository/maven-public/") {
             name = "sponge"
         }
-        maven("https://maven.fabricmc.net/") {
-            name = "Fabric"
-        }
+        maven("https://maven.fabricmc.net/")
+        maven("https://maven.architectury.dev/") 
         gradlePluginPortal()
     }
 
@@ -32,7 +31,7 @@ plugins {
 }
 
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT) // needed for forge-loom, unfortunately
     repositories {
         maven("https://repo.spongepowered.org/repository/maven-public/") {
             name = "sponge"
@@ -48,6 +47,16 @@ extensions.configure(MinecraftRepositoryExtension::class) {
 }
 
 // Set up project structure
+
+if (!file("SpongeAPI/gradle.properties").exists()) {
+    throw InvalidUserDataException("""
+        The SpongeAPI submodule required to build does not appear to be set up. 
+        
+        To correct this, run
+            git submodule update --init --recursive
+        from the project's checkout directory.
+    """.trimIndent())
+}
 
 includeBuild("build-logic")
 includeBuild("SpongeAPI") {

@@ -195,7 +195,7 @@ public abstract class LevelMixin_API<W extends World<W, L>, L extends Location<W
 
     @Override
     public Vector3i max() {
-        return Constants.World.BIOME_MAX;
+        return Constants.World.BLOCK_MAX;
     }
 
     @Override
@@ -423,11 +423,6 @@ public abstract class LevelMixin_API<W extends World<W, L>, L extends Location<W
         // technically we don't like to forward to the api, but this
         // is implemented by LevelChunkMixin_API
         return ((BiomeVolume.Modifiable) levelChunk).setBiome(x, y, z, biome);
-    }
-
-    @Override
-    public boolean spawnEntity(final Entity entity) {
-        return ((LevelChunkBridge) this.shadow$getChunkAt(((net.minecraft.world.entity.Entity) entity).blockPosition())).bridge$spawnEntity(entity);
     }
 
     @Override

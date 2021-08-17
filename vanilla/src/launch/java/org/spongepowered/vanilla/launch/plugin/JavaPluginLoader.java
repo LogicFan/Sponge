@@ -25,8 +25,8 @@
 package org.spongepowered.vanilla.launch.plugin;
 
 import com.google.inject.Injector;
-import org.spongepowered.common.SpongeBootstrap;
 import org.spongepowered.common.inject.plugin.PluginModule;
+import org.spongepowered.common.launch.Launch;
 import org.spongepowered.plugin.InvalidPluginException;
 import org.spongepowered.plugin.PluginCandidate;
 import org.spongepowered.plugin.PluginEnvironment;
@@ -38,12 +38,9 @@ import java.util.Optional;
 
 public final class JavaPluginLoader extends JVMPluginLoader<JVMPluginContainer> {
 
-    public JavaPluginLoader() {
-    }
-
     @Override
     public Optional<JVMPluginContainer> createPluginContainer(final PluginCandidate<JVMPluginResource> candidate, final PluginEnvironment environment) {
-        return Optional.of(new JVMPluginContainer(candidate));
+        return Optional.of(new VanillaJavaPluginContainer(candidate));
     }
 
     @Override
@@ -51,7 +48,7 @@ public final class JavaPluginLoader extends JVMPluginLoader<JVMPluginContainer> 
         try {
             final String mainClass = container.metadata().mainClass();
             final Class<?> pluginClass = Class.forName(mainClass, true, targetClassLoader);
-            final Injector parentInjector = SpongeBootstrap.injector();
+            final Injector parentInjector = Launch.instance().lifecycle().platformInjector();
             if (parentInjector != null) {
                 final Injector childInjector = parentInjector.createChildInjector(new PluginModule(container, pluginClass));
                 return childInjector.getInstance(pluginClass);

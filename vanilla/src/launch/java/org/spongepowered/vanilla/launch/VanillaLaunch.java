@@ -41,6 +41,7 @@ import org.spongepowered.plugin.metadata.util.PluginMetadataHelper;
 import org.spongepowered.vanilla.applaunch.plugin.VanillaPluginPlatform;
 import org.spongepowered.vanilla.launch.inject.SpongeVanillaModule;
 import org.spongepowered.vanilla.launch.mapping.VanillaMappingManager;
+import org.spongepowered.vanilla.launch.plugin.VanillaDummyPluginContainer;
 import org.spongepowered.vanilla.launch.plugin.VanillaPluginManager;
 
 import java.io.IOException;
@@ -69,11 +70,6 @@ public abstract class VanillaLaunch extends Launch {
     @Override
     public final Stage injectionStage() {
         return this.injectionStage;
-    }
-
-    @Override
-    public final void performLifecycle() {
-        this.pluginManager().loadPlugins(this.pluginPlatform());
     }
 
     @Override
@@ -166,7 +162,7 @@ public abstract class VanillaLaunch extends Launch {
             }
 
             for (final PluginMetadata metadata : read) {
-                this.pluginManager().addDummyPlugin(new DummyPluginContainer(metadata, this.logger(), this));
+                this.pluginManager().addPlugin(new VanillaDummyPluginContainer(metadata, this.logger(), this));
             }
         } catch (final IOException | URISyntaxException e) {
             throw new RuntimeException("Could not load metadata information for the implementation! This should be impossible!");

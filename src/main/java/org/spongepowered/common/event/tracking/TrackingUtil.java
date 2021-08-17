@@ -49,7 +49,6 @@ import org.spongepowered.api.block.entity.BlockEntity;
 import org.spongepowered.api.block.transaction.BlockTransactionReceipt;
 import org.spongepowered.api.data.Transaction;
 import org.spongepowered.api.entity.Entity;
-import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.SpongeEventFactory;
 import org.spongepowered.api.event.block.TickBlockEvent;
 import org.spongepowered.api.world.BlockChangeFlag;
@@ -57,12 +56,11 @@ import org.spongepowered.api.world.BlockChangeFlags;
 import org.spongepowered.api.world.LocatableBlock;
 import org.spongepowered.common.SpongeCommon;
 import org.spongepowered.common.block.SpongeBlockSnapshot;
-import org.spongepowered.common.block.SpongeBlockSnapshotBuilder;
 import org.spongepowered.common.bridge.CreatorTrackedBridge;
 import org.spongepowered.common.bridge.TimingBridge;
 import org.spongepowered.common.bridge.TrackableBridge;
 import org.spongepowered.common.bridge.world.TrackedWorldBridge;
-import org.spongepowered.common.bridge.world.level.TrackerBlockEventDataBridge;
+import org.spongepowered.common.bridge.world.level.TrackableBlockEventDataBridge;
 import org.spongepowered.common.bridge.world.level.block.entity.BlockEntityBridge;
 import org.spongepowered.common.bridge.world.level.chunk.ActiveChunkReferantBridge;
 import org.spongepowered.common.bridge.world.level.chunk.LevelChunkBridge;
@@ -370,7 +368,7 @@ public final class TrackingUtil {
     public static boolean fireMinecraftBlockEvent(final ServerLevel worldIn, final BlockEventData event,
         final net.minecraft.world.level.block.state.BlockState currentState
     ) {
-        final TrackerBlockEventDataBridge blockEvent = (TrackerBlockEventDataBridge) event;
+        final TrackableBlockEventDataBridge blockEvent = (TrackableBlockEventDataBridge) event;
         final @Nullable Object source = blockEvent.bridge$getTileEntity() != null ? blockEvent.bridge$getTileEntity() : blockEvent.bridge$getTickingLocatable();
         if (source == null) {
             // No source present which means we are ignoring the phase state
@@ -379,7 +377,7 @@ public final class TrackingUtil {
         final BlockEventTickContext phaseContext = TickPhase.Tick.BLOCK_EVENT.createPhaseContext(PhaseTracker.SERVER);
         phaseContext.source(source);
 
-        final UUID user = ((TrackerBlockEventDataBridge) event).bridge$getSourceUserUUID();
+        final UUID user = ((TrackableBlockEventDataBridge) event).bridge$getSourceUserUUID();
         if (user != null) {
             phaseContext.creator = user;
             phaseContext.notifier = user;
@@ -466,7 +464,8 @@ public final class TrackingUtil {
         });
     }
 
-    public static void addTileEntityToBuilder(final net.minecraft.world.level.block.entity.BlockEntity existing, final SpongeBlockSnapshotBuilder builder) {
+    public static void addTileEntityToBuilder(final net.minecraft.world.level.block.entity.BlockEntity existing,
+        final SpongeBlockSnapshot.BuilderImpl builder) {
         // TODO - gather custom data.
         final CompoundTag compound = new CompoundTag();
         try {
@@ -503,7 +502,7 @@ public final class TrackingUtil {
         final Supplier<Optional<UUID>> creatorSupplier,
         final Supplier<Optional<UUID>> notifierSupplier
     ) {
-        final SpongeBlockSnapshotBuilder builder = SpongeBlockSnapshotBuilder.pooled();
+        final SpongeBlockSnapshot.BuilderImpl builder = SpongeBlockSnapshot.BuilderImpl.pooled();
         builder.reset();
         builder.blockState(state)
                 .world(worldSupplier.get())

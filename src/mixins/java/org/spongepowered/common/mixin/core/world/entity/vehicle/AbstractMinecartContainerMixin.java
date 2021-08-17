@@ -38,6 +38,11 @@ public abstract class AbstractMinecartContainerMixin extends AbstractMinecartMix
     @Shadow private boolean dropEquipment;
     // @formatter:on
 
+    @Override
+    protected void impl$onPreWorldChangeCanceled() {
+        this.dropEquipment = true;
+    }
+
     /**
      * @author Zidane - June 2019 - 1.12.2
      * @author i509VCB - Feb 2020 - 1.14.4
@@ -47,9 +52,10 @@ public abstract class AbstractMinecartContainerMixin extends AbstractMinecartMix
     @Override
     @Nullable
     protected @org.checkerframework.checker.nullness.qual.Nullable Entity impl$postProcessChangeDimension(final Entity entity) {
-        if (entity instanceof AbstractMinecartContainer) {
-            // We actually teleported so...
-            this.dropEquipment = false;
+        if (!(entity instanceof AbstractMinecartContainer)) {
+            // it was false, if the entity returned by the teleporter is obviously not
+            // representing this, this should drop its equipment again.
+            this.dropEquipment = true;
         }
 
         return entity;

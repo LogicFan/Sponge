@@ -36,6 +36,7 @@ import org.spongepowered.common.applaunch.plugin.PluginPlatform;
 import org.spongepowered.common.launch.mapping.SpongeMappingManager;
 import org.spongepowered.common.launch.plugin.SpongePluginManager;
 import org.spongepowered.plugin.PluginContainer;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,6 +49,7 @@ public abstract class Launch {
     private final Logger logger;
     private final List<PluginContainer> launcherPlugins;
     private PluginContainer minecraftPlugin, apiPlugin, commonPlugin;
+    private Lifecycle lifecycle;
 
     protected Launch(final PluginPlatform pluginPlatform) {
         this.logger = LogManager.getLogger("launch");
@@ -77,6 +79,20 @@ public abstract class Launch {
     public abstract SpongePluginManager pluginManager();
 
     public abstract SpongeMappingManager mappingManager();
+    
+    public Lifecycle lifecycle() {
+        if (this.lifecycle == null) {
+            throw new RuntimeException("The lifecycle has not been set during launch! Too early?");
+        }
+        return this.lifecycle;
+    }
+
+    public void setLifecycle(final Lifecycle lifecycle) {
+        if (this.lifecycle != null) {
+            throw new RuntimeException("Attempt made to re-set lifecycle instance twice!");
+        }
+        this.lifecycle = lifecycle;
+    }
 
     public final Logger logger() {
         return this.logger;
@@ -146,6 +162,4 @@ public abstract class Launch {
     }
 
     public abstract Injector createInjector();
-
-    public abstract void performLifecycle();
 }
